@@ -170,7 +170,7 @@ function ArticlePreview({ markdown }: { markdown: string }) {
       nodes.push(<div key={`h3-${i}`} style={{ margin: "40px 0 22px", display: "flex", alignItems: "center", gap: "12px", color: "#4f6e58" }}><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /><span style={{ fontFamily: "Georgia,serif", fontSize: "18px", letterSpacing: "3px", fontWeight: 600 }}>{line.slice(4)}</span><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /></div>);
       i += 1; continue;
     }
-    nodes.push(<p key={`p-${i}`} style={{ margin: "0 0 20px", textAlign: "justify", lineHeight: 2, letterSpacing: "0.7px", color: "#3f4742", fontSize: "16px" }}>{inlineParts(line)}</p>);
+    nodes.push(<p key={`p-${i}`} style={{ margin: "0 0 21px", textAlign: "justify", lineHeight: 2.05, letterSpacing: "0.7px", color: "#323a35", fontSize: "17px" }}>{inlineParts(line)}</p>);
     i += 1;
   }
   return <>{nodes}</>;
@@ -263,7 +263,7 @@ export default function MiniXiumi() {
       const canvas = await toCanvas(preview, {
         backgroundColor: "#fffdf5",
         cacheBust: true,
-        pixelRatio: 1.5,
+        pixelRatio: 2,
       });
       const sliceHeight = 2400;
       const images: string[] = [];
@@ -275,7 +275,7 @@ export default function MiniXiumi() {
         const context = slice.getContext("2d");
         if (!context) throw new Error("无法创建图片画布");
         context.drawImage(canvas, 0, top, canvas.width, height, 0, 0, canvas.width, height);
-        images.push(slice.toDataURL("image/jpeg", 0.92));
+        images.push(slice.toDataURL("image/jpeg", 0.98));
       }
       const html = `<section style="margin:0;padding:0;line-height:0;">${images.map((src) => `<img src="${src}" alt="" style="display:block;width:100%;height:auto;margin:0;padding:0;border:0;vertical-align:top;" />`).join("")}</section>`;
       const plain = preview.innerText;
