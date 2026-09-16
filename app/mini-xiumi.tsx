@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { toCanvas } from "html-to-image";
 
 const INITIAL_MARKDOWN = `# 青柠檬
 
@@ -186,7 +187,8 @@ const tools = [
 
 export default function MiniXiumi() {
   const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN);
-  const [copyState, setCopyState] = useState("复制公众号排版");
+  const [copyState, setCopyState] = useState("复制可编辑版");
+  const [imageCopyState, setImageCopyState] = useState("复制图片版（保背景）");
   const [storageReady, setStorageReady] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLElement>(null);
@@ -228,49 +230,10 @@ export default function MiniXiumi() {
       return dataUrl;
     }
 
-    // WeChat strips CSS background-image declarations while keeping regular
-    // images and positioning styles. Build the copied background from real
-    // image elements so the editor imports it like the other article images.
-    const backgroundDataUrl = await embed(new URL("/qingningmeng-background-wechat.jpg", window.location.href).href);
-    const backgroundLayer = document.createElement("section");
-    backgroundLayer.setAttribute("aria-hidden", "true");
-    Object.assign(backgroundLayer.style, {
-      position: "absolute",
-      top: "0",
-      right: "0",
-      bottom: "0",
-      left: "0",
-      overflow: "hidden",
-      lineHeight: "0",
-      pointerEvents: "none",
-      zIndex: "0",
-    });
-    const renderedTileHeight = Math.max(preview.clientWidth * 3, 1);
-    const tileCount = Math.max(1, Math.ceil(preview.scrollHeight / renderedTileHeight) + 1);
-    for (let tile = 0; tile < tileCount; tile += 1) {
-      const backgroundImage = document.createElement("img");
-      backgroundImage.src = backgroundDataUrl;
-      backgroundImage.alt = "";
-      Object.assign(backgroundImage.style, {
-        display: "block",
-        width: "100%",
-        height: "auto",
-        margin: "0",
-        padding: "0",
-        border: "0",
-      });
-      backgroundLayer.appendChild(backgroundImage);
-    }
-    const contentLayer = document.createElement("section");
-    Object.assign(contentLayer.style, { position: "relative", zIndex: "1" });
-    while (clone.firstChild) contentLayer.appendChild(clone.firstChild);
-    clone.append(backgroundLayer, contentLayer);
+    // The editable version intentionally omits the page background. WeChat
+    // removes background and positioning styles during publication, which can
+    // otherwise move decorative images above the article.
     clone.style.backgroundImage = "none";
-    clone.style.backgroundRepeat = "initial";
-    clone.style.backgroundPosition = "initial";
-    clone.style.backgroundSize = "initial";
-    clone.style.position = "relative";
-    clone.style.overflow = "hidden";
 
     await Promise.all(Array.from(clone.querySelectorAll("img")).map(async (img) => {
       const src = img.getAttribute("src");
@@ -287,8 +250,62 @@ export default function MiniXiumi() {
         document.execCommand("copy"); selection?.removeAllRanges();
       }
       setCopyState("已复制，去公众号粘贴");
-      window.setTimeout(() => setCopyState("复制公众号排版"), 2500);
+      window.setTimeout(() => setCopyState("复制可编辑版"), 2500);
     } catch { setCopyState("请允许剪贴板权限"); }
+  }
+
+  async function copyImageLayout() {
+    const preview = previewRef.current;
+    if (!preview) return;
+    setImageCopyState("正在生成图片…");
+    try {
+      await document.fonts?.ready;
+      const canvas = await toCanvas(preview, {
+        backgroundColor: "#fffdf5",
+        cacheBust: true,
+        pixelRatio: 1.5,
+      });
+      const sliceHeight = 2400;
+      const images: string[] = [];
+      for (let top = 0; top < canvas.height; top += sliceHeight) {
+        const height = Math.min(sliceHeight, canvas.height - top);
+        const slice = document.createElement("canvas");
+        slice.width = canvas.width;
+        slice.height = height;
+        const context = slice.getContext("2d");
+        if (!context) throw new Error("无法创建图片画布");
+        context.drawImage(canvas, 0, top, canvas.width, height, 0, 0, canvas.width, height);
+        images.push(slice.toDataURL("image/jpeg", 0.92));
+      }
+      const html = `<section style="margin:0;padding:0;line-height:0;">${images.map((src) => `<img src="${src}" alt="" style="display:block;width:100%;height:auto;margin:0;padding:0;border:0;vertical-align:top;" />`).join("")}</section>`;
+      const plain = preview.innerText;
+      if (navigator.clipboard && "ClipboardItem" in window) {
+        await navigator.clipboard.write([new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" }),
+        })]);
+      } else {
+        const holder = document.createElement("div");
+        holder.contentEditable = "true";
+        holder.style.position = "fixed";
+        holder.style.left = "-100000px";
+        holder.innerHTML = html;
+        document.body.appendChild(holder);
+        const range = document.createRange();
+        range.selectNodeContents(holder);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        document.execCommand("copy");
+        selection?.removeAllRanges();
+        holder.remove();
+      }
+      setImageCopyState("已复制，背景不会跑位");
+      window.setTimeout(() => setImageCopyState("复制图片版（保背景）"), 3000);
+    } catch {
+      setImageCopyState("生成失败，请重试");
+      window.setTimeout(() => setImageCopyState("复制图片版（保背景）"), 3000);
+    }
   }
 
   function downloadMarkdown() {
@@ -300,14 +317,14 @@ export default function MiniXiumi() {
     <main className="studio-shell">
       <header className="topbar">
         <div className="brand"><span className="brand-fruit">青柠</span><div><strong>青柠排版间</strong><small>《青柠檬》专属迷你秀米</small></div></div>
-        <div className="top-actions"><span>{characters.toLocaleString()} 字</span><button className="ghost-button" onClick={downloadMarkdown}>导出 Markdown</button><button className="primary-button" onClick={copyRichText}>{copyState}</button></div>
+        <div className="top-actions"><span>{characters.toLocaleString()} 字</span><button className="ghost-button" onClick={downloadMarkdown}>导出 Markdown</button><button className="ghost-button" onClick={copyRichText}>{copyState}</button><button className="primary-button" onClick={copyImageLayout}>{imageCopyState}</button></div>
       </header>
       <div className="workspace">
         <aside className="toolbox">
           <div className="toolbox-title">常用组件</div><p>点击后插入到光标位置</p>
           <div className="tool-grid">{tools.map((tool) => <button key={tool.label} onClick={() => insertSnippet(tool.insert)}>{tool.label}</button>)}</div>
           <div className="palette-card"><strong>青柠色板</strong><div className="swatches"><i /><i /><i /><i /></div><small>墨绿 · 青柠 · 奶油白 · 雾蓝</small></div>
-          <div className="tip-card">内容会自动保存在当前浏览器。复制后直接粘贴到公众号正文区域。</div>
+          <div className="tip-card">内容会自动保存在当前浏览器。需要完整背景时请使用“复制图片版”；需要继续编辑文字时使用“复制可编辑版”。</div>
         </aside>
         <section className="editor-pane">
           <div className="pane-heading"><strong>Markdown 正文</strong><span>实时保存</span></div>
