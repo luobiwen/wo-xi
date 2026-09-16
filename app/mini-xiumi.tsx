@@ -227,17 +227,55 @@ export default function MiniXiumi() {
       embeddedAssets.set(url, dataUrl);
       return dataUrl;
     }
+
+    // WeChat strips CSS background-image declarations while keeping regular
+    // images and positioning styles. Build the copied background from real
+    // image elements so the editor imports it like the other article images.
+    const backgroundDataUrl = await embed(new URL("/qingningmeng-background-wechat.jpg", window.location.href).href);
+    const backgroundLayer = document.createElement("section");
+    backgroundLayer.setAttribute("aria-hidden", "true");
+    Object.assign(backgroundLayer.style, {
+      position: "absolute",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      left: "0",
+      overflow: "hidden",
+      lineHeight: "0",
+      pointerEvents: "none",
+      zIndex: "0",
+    });
+    const renderedTileHeight = Math.max(preview.clientWidth * 3, 1);
+    const tileCount = Math.max(1, Math.ceil(preview.scrollHeight / renderedTileHeight) + 1);
+    for (let tile = 0; tile < tileCount; tile += 1) {
+      const backgroundImage = document.createElement("img");
+      backgroundImage.src = backgroundDataUrl;
+      backgroundImage.alt = "";
+      Object.assign(backgroundImage.style, {
+        display: "block",
+        width: "100%",
+        height: "auto",
+        margin: "0",
+        padding: "0",
+        border: "0",
+      });
+      backgroundLayer.appendChild(backgroundImage);
+    }
+    const contentLayer = document.createElement("section");
+    Object.assign(contentLayer.style, { position: "relative", zIndex: "1" });
+    while (clone.firstChild) contentLayer.appendChild(clone.firstChild);
+    clone.append(backgroundLayer, contentLayer);
+    clone.style.backgroundImage = "none";
+    clone.style.backgroundRepeat = "initial";
+    clone.style.backgroundPosition = "initial";
+    clone.style.backgroundSize = "initial";
+    clone.style.position = "relative";
+    clone.style.overflow = "hidden";
+
     await Promise.all(Array.from(clone.querySelectorAll("img")).map(async (img) => {
       const src = img.getAttribute("src");
-      if (src) img.setAttribute("src", await embed(new URL(src, window.location.href).href));
+      if (src && !src.startsWith("data:")) img.setAttribute("src", await embed(new URL(src, window.location.href).href));
     }));
-    Array.from(clone.querySelectorAll<HTMLElement>("[style]")).forEach((element) => {
-      const match = element.style.backgroundImage.match(/url\(["']?(.*?)["']?\)/);
-      if (match?.[1]) {
-        const publicUrl = new URL(match[1], window.location.href).href;
-        element.style.backgroundImage = `url("${publicUrl}")`;
-      }
-    });
     const html = clone.outerHTML;
     const plain = preview.innerText;
     try {
@@ -278,7 +316,7 @@ export default function MiniXiumi() {
         <section className="preview-pane">
           <div className="pane-heading"><strong>公众号预览</strong><span>390 px</span></div>
           <div className="phone-stage">
-            <article ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "0 20px 64px", backgroundColor: "#fffdf5", backgroundImage: "url('/qingningmeng-background-seamless.png')", backgroundRepeat: "repeat-y", backgroundPosition: "top center", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}><ArticlePreview markdown={markdown} /></article>
+            <section ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "0 20px 64px", backgroundColor: "#fffdf5", backgroundImage: "url('/qingningmeng-background-seamless.png')", backgroundRepeat: "repeat-y", backgroundPosition: "top center", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}><ArticlePreview markdown={markdown} /></section>
           </div>
         </section>
       </div>
