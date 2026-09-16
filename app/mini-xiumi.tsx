@@ -265,19 +265,30 @@ export default function MiniXiumi() {
         cacheBust: true,
         pixelRatio: 2,
       });
-      const sliceHeight = 2400;
+      const outputWidth = Math.min(600, canvas.width);
+      const outputScale = outputWidth / canvas.width;
+      const output = document.createElement("canvas");
+      output.width = outputWidth;
+      output.height = Math.round(canvas.height * outputScale);
+      const outputContext = output.getContext("2d");
+      if (!outputContext) throw new Error("无法创建输出画布");
+      outputContext.imageSmoothingEnabled = true;
+      outputContext.imageSmoothingQuality = "high";
+      outputContext.drawImage(canvas, 0, 0, output.width, output.height);
+
+      const sliceHeight = 2000;
       const images: string[] = [];
-      for (let top = 0; top < canvas.height; top += sliceHeight) {
-        const height = Math.min(sliceHeight, canvas.height - top);
+      for (let top = 0; top < output.height; top += sliceHeight) {
+        const height = Math.min(sliceHeight, output.height - top);
         const slice = document.createElement("canvas");
-        slice.width = canvas.width;
+        slice.width = output.width;
         slice.height = height;
         const context = slice.getContext("2d");
         if (!context) throw new Error("无法创建图片画布");
-        context.drawImage(canvas, 0, top, canvas.width, height, 0, 0, canvas.width, height);
+        context.drawImage(output, 0, top, output.width, height, 0, 0, output.width, height);
         images.push(slice.toDataURL("image/jpeg", 0.98));
       }
-      const html = `<section style="margin:0;padding:0;line-height:0;">${images.map((src) => `<img src="${src}" alt="" style="display:block;width:100%;height:auto;margin:0;padding:0;border:0;vertical-align:top;" />`).join("")}</section>`;
+      const html = `<section style="margin:0 auto;padding:0;line-height:0;text-align:center;">${images.map((src) => `<img src="${src}" alt="" width="${outputWidth}" style="display:block;width:${outputWidth}px;max-width:100%;height:auto;margin:0 auto;padding:0;border:0;vertical-align:top;" />`).join("")}</section>`;
       const plain = preview.innerText;
       if (navigator.clipboard && "ClipboardItem" in window) {
         await navigator.clipboard.write([new ClipboardItem({
