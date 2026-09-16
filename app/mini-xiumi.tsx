@@ -258,9 +258,31 @@ export default function MiniXiumi() {
     const preview = previewRef.current;
     if (!preview) return;
     setImageCopyState("正在生成图片…");
+    let captureHost: HTMLDivElement | null = null;
     try {
       await document.fonts?.ready;
-      const canvas = await toCanvas(preview, {
+      captureHost = document.createElement("div");
+      Object.assign(captureHost.style, {
+        position: "fixed",
+        top: "0",
+        left: "-10000px",
+        width: "430px",
+        pointerEvents: "none",
+      });
+      const capture = preview.cloneNode(true) as HTMLElement;
+      Object.assign(capture.style, {
+        width: "430px",
+        maxWidth: "none",
+        minHeight: "0",
+        margin: "0",
+        position: "relative",
+        boxSizing: "border-box",
+        boxShadow: "none",
+      });
+      captureHost.appendChild(capture);
+      document.body.appendChild(captureHost);
+
+      const canvas = await toCanvas(capture, {
         backgroundColor: "#fffdf5",
         cacheBust: true,
         pixelRatio: 2,
@@ -316,6 +338,8 @@ export default function MiniXiumi() {
     } catch {
       setImageCopyState("生成失败，请重试");
       window.setTimeout(() => setImageCopyState("复制图片版（保背景）"), 3000);
+    } finally {
+      captureHost?.remove();
     }
   }
 
