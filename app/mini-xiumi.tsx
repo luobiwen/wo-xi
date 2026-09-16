@@ -131,6 +131,22 @@ function inlineParts(text: string) {
 function ArticlePreview({ markdown }: { markdown: string }) {
   const lines = markdown.replace(/<\/?div[^>]*>/g, "").split(/\r?\n/);
   const nodes: React.ReactNode[] = [];
+  let bodyCardNodes: React.ReactNode[] | null = null;
+  let bodyCardIndex = 0;
+  const pushNode = (node: React.ReactNode) => {
+    if (bodyCardNodes) bodyCardNodes.push(node);
+    else nodes.push(node);
+  };
+  const flushBodyCard = () => {
+    if (!bodyCardNodes) return;
+    nodes.push(
+      <section key={`body-card-${bodyCardIndex}`} style={{ margin: "34px 6px", padding: "22px 22px 8px", backgroundColor: "rgba(255,255,255,.93)", border: "1px solid rgba(164,185,126,.36)", borderRadius: "6px", boxShadow: "0 8px 24px rgba(49,72,60,.08)" }}>
+        {bodyCardNodes}
+      </section>,
+    );
+    bodyCardIndex += 1;
+    bodyCardNodes = null;
+  };
   let i = 0;
   while (i < lines.length) {
     const line = lines[i].trim();
@@ -139,11 +155,11 @@ function ArticlePreview({ markdown }: { markdown: string }) {
     if (image) {
       const src = imageMap[image[2]] || image[2];
       const isCover = image[2].includes("cover");
-      nodes.push(<img key={`img-${i}`} src={src} alt={image[1]} style={{ display: "block", width: "100%", height: "auto", margin: isCover ? "0 0 34px" : "34px 0", borderRadius: isCover ? "0" : "4px" }} />);
+      pushNode(<img key={`img-${i}`} src={src} alt={image[1]} style={{ display: "block", width: "100%", height: "auto", margin: isCover ? "0 0 34px" : "34px 0", borderRadius: isCover ? "0" : "4px" }} />);
       i += 1; continue;
     }
     if (line === "---") {
-      nodes.push(<div key={`hr-${i}`} style={{ textAlign: "center", margin: "34px 0", color: "#9caf78", letterSpacing: "8px" }}>· · 🍋‍🟩 · ·</div>);
+      pushNode(<div key={`hr-${i}`} style={{ textAlign: "center", margin: "34px 0", color: "#9caf78", letterSpacing: "8px" }}>· · 🍋‍🟩 · ·</div>);
       i += 1; continue;
     }
     if (line.startsWith(">")) {
@@ -152,7 +168,7 @@ function ArticlePreview({ markdown }: { markdown: string }) {
         if (lines[i].trim().startsWith(">")) quote.push(lines[i].trim().replace(/^>\s?/, ""));
         i += 1;
       }
-      nodes.push(
+      pushNode(
         <section key={`quote-${i}`} style={{ margin: "28px 0", padding: "34px 30px", textAlign: "center", color: "#526358", lineHeight: 2, backgroundColor: "rgba(255,255,255,.52)", borderTop: "1px solid rgba(164,185,126,.45)", borderBottom: "1px solid rgba(164,185,126,.45)" }}>
           {quote.filter(Boolean).map((q, n) => <div key={n}>{inlineParts(q)}</div>)}
         </section>,
@@ -160,21 +176,31 @@ function ArticlePreview({ markdown }: { markdown: string }) {
       continue;
     }
     if (line.startsWith("# ")) {
+      flushBodyCard();
       nodes.push(<h1 key={`h1-${i}`} style={{ margin: "12px 0 8px", textAlign: "center", fontFamily: "'Noto Serif SC','Songti SC',SimSun,serif", fontSize: "34px", letterSpacing: "9px", color: "#315a45", fontWeight: 700 }}>{line.slice(2)}</h1>);
       i += 1; continue;
     }
     if (line.startsWith("## ")) {
+      flushBodyCard();
       nodes.push(<h2 key={`h2-${i}`} style={{ margin: "34px 0 22px", textAlign: "center", fontFamily: "'Noto Serif SC','Songti SC',SimSun,serif", fontSize: "25px", letterSpacing: "5px", color: "#355746", fontWeight: 650 }}>{line.slice(3)}</h2>);
       i += 1; continue;
     }
     if (line.startsWith("### ")) {
-      nodes.push(<div key={`h3-${i}`} style={{ margin: "40px 0 22px", display: "flex", alignItems: "center", gap: "12px", color: "#4f6e58" }}><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /><span style={{ fontFamily: "Georgia,serif", fontSize: "18px", letterSpacing: "3px", fontWeight: 600 }}>{line.slice(4)}</span><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /></div>);
+      const heading = line.slice(4);
+      flushBodyCard();
+      const headingNode = <div key={`h3-${i}`} style={{ margin: /^\d+$/.test(heading) ? "2px 0 24px" : "40px 0 22px", display: "flex", alignItems: "center", gap: "12px", color: "#4f6e58" }}><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /><span style={{ fontFamily: "Georgia,serif", fontSize: "18px", letterSpacing: "3px", fontWeight: 600 }}>{heading}</span><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /></div>;
+      if (/^\d+$/.test(heading)) {
+        bodyCardNodes = [headingNode];
+      } else {
+        nodes.push(headingNode);
+      }
       i += 1; continue;
     }
     const isStandaloneBold = /^\*\*.*\*\*$/.test(line);
-    nodes.push(<p key={`p-${i}`} style={{ margin: "0 0 21px", textAlign: "justify", textIndent: isStandaloneBold ? "0" : "2em", lineHeight: 2.05, letterSpacing: "0.7px", color: "#323a35", fontSize: "17px" }}>{inlineParts(line)}</p>);
+    pushNode(<p key={`p-${i}`} style={{ margin: "0 0 22px", textAlign: "justify", textIndent: isStandaloneBold ? "0" : "2em", lineHeight: 2, letterSpacing: "0.5px", color: "#24352c", fontSize: "18px", fontWeight: 400 }}>{inlineParts(line)}</p>);
     i += 1;
   }
+  flushBodyCard();
   return <>{nodes}</>;
 }
 
@@ -282,7 +308,11 @@ export default function MiniXiumi() {
         <section className="preview-pane">
           <div className="pane-heading"><strong>公众号预览</strong><span>390 px</span></div>
           <div className="phone-stage">
-            <section ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "0 20px 64px", backgroundColor: "#fffdf5", backgroundImage: `url("${WECHAT_BACKGROUND}")`, backgroundRepeat: "repeat-y", backgroundPosition: "center top", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}><ArticlePreview markdown={markdown} /></section>
+            <section ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "14px 14px 44px", backgroundColor: "#fffdf5", backgroundImage: `url("${WECHAT_BACKGROUND}")`, backgroundRepeat: "repeat-y", backgroundPosition: "center top", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}>
+              <section style={{ padding: "0 18px 42px", backgroundColor: "rgba(255,253,247,0.94)", border: "1px solid rgba(207,216,194,0.82)" }}>
+                <ArticlePreview markdown={markdown} />
+              </section>
+            </section>
           </div>
         </section>
       </div>
