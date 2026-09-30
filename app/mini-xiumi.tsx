@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const WECHAT_BACKGROUND = "https://mmbiz.qpic.cn/sz_mmbiz_png/GRp01Ua2EeMCCv2Svg4mT5WK14fZ3Otk6y9QyGqhAjvzkCPElhvfG0NMI8yvJz5EctVk95YBQN6VOhNp9JDzZgIzBos6xicoonc5CD5zbHJ4/0?wx_fmt=png";
+const WECHAT_COMPOSITION_BACKGROUND = "https://mmbiz.qpic.cn/sz_mmbiz_png/GRp01Ua2EeNNa6tsL2wHIHwyxUorVUlBwccDPtfibYwNfCs7qWI9vUPPyrvamht2JMFSq1bia3Jxmf5hm8ibVicazxKiaibiasmou20gStDAfnmFgQ/0?wx_fmt=png";
 
 const INITIAL_MARKDOWN = `# 青柠檬
 
@@ -114,21 +115,261 @@ const INITIAL_MARKDOWN = `# 青柠檬
 >
 > 以及那些没有说出口的喜欢的青春校园小说。`;
 
+const READING_GUIDE_MARKDOWN = `# 青柠檬
+
+**READING NOTICE · 阅读须知**
+
+在翻开这颗青柠之前，请先读完这份阅读指南。
+
+## 小说简介
+
+《青柠檬》是一部长篇青春校园小说。故事从一场倾盆大雨开始，写少年少女在流言、偏见、友谊与朦胧情愫之间跌跌撞撞地长大。
+
+青柠尚未成熟时，入口总是微酸；可也正是这份青涩，构成了青春最难忘的味道。
+
+## 高分作文一览
+
+### 《青柠的味道》
+
+青春像一颗还没有成熟的青柠，外表青涩，味道微酸，却藏着独属于夏天的清香。那些曾经让我们落泪的瞬间，也会在很多年后，成为记忆里最明亮的一束光。
+
+成长不是催促青柠提前变甜，而是允许它带着酸涩慢慢成熟。每一道旧伤都会结成纹路，提醒我们曾经怎样认真地生活过。
+
+### 《雨落下的时候》
+
+雨点落在窗台上，一声接着一声，像有人把没有说出口的话，轻轻敲给夜晚听。我忽然明白，有些成长并不是学会遗忘，而是终于敢回头看那段来路。
+
+雨停以后，操场上积着一层浅浅的水，倒映着被洗亮的天空。我踩过水面，也踩过昨日的胆怯，第一次觉得前方没有想象中那么遥远。
+
+### 《写给未成熟的自己》
+
+如果可以回到过去，我不会催促那个笨拙又敏感的自己快点长大。我会告诉她：慢一点也没有关系，青柠总有成熟的一天，而你也会拥有属于自己的清香。
+
+后来我才明白，真正的成熟不是变得坚硬，而是在看清生活的锋利之后，依然愿意相信温柔、相信自己，也相信明天会有新的光。
+
+## 小说类型
+
+**题材**：青春校园 · 成长治愈 · 情感长篇
+
+**篇幅**：预计 30 万字左右
+
+**章节**：预计 120 章
+
+**状态**：持续连载中
+
+**更新频率**：每周更新 2—3 篇，特殊情况会提前说明
+
+## 付费标准
+
+**免费试读**：前 10 章免费阅读
+
+**付费章节**：第 11 章起进入付费阅读，每章价格请以公众号页面显示为准
+
+**阅读说明**：付费后可永久阅读对应章节；已经购买的章节无需重复付费
+
+**温馨提醒**：请在购买前确认章节标题，数字内容一经解锁，通常不支持退款
+
+## 小说合集入口
+
+### 免费合集
+
+[免费合集第一章](https://mp.weixin.qq.com/s/REPLACE_FREE_FIRST_CHAPTER)
+
+[免费合集链接](https://mp.weixin.qq.com/mp/appmsgalbum?album_id=REPLACE_FREE_ALBUM_ID)
+
+### 付费合集
+
+[付费合集第一章](https://mp.weixin.qq.com/s/REPLACE_PAID_FIRST_CHAPTER)
+
+[付费合集链接](https://mp.weixin.qq.com/mp/appmsgalbum?album_id=REPLACE_PAID_ALBUM_ID)
+
+## 作者简介
+
+**作者**：请在这里填写作者笔名
+
+一个喜欢记录青春、情绪与人心褶皱的写作者。相信成长并不是忘记疼痛，而是在回望时，终于能温柔地拥抱当年的自己。
+
+**联系与合作**：请填写公众号名称或联系邮箱
+
+---
+
+愿你在《青柠檬》里，看见青春，也看见自己。 🍋‍🟩`;
+
 const imageMap: Record<string, string> = {
   "qingningmeng-cover.png": "/qingningmeng-cover-anime.png",
   "qingningmeng-divider.png": "/qingningmeng-divider.png",
   "qingningmeng-background.png": "/qingningmeng-background-seamless.png",
+  "胡雨人设卡.png": "/huyu-character-card.png",
+  "徐晴晴人设卡.png": "/xuqingqing-character-card.png",
 };
 
+function resolveImageSource(source: string) {
+  const normalizedImagePath = source.replace(/^\/+/, "");
+  const imageFileName = normalizedImagePath.split(/[\\/]/).pop() || normalizedImagePath;
+  return imageMap[source] || imageMap[normalizedImagePath] || imageMap[imageFileName] || source;
+}
+
+const DEFAULT_COMPOSITION = `# 我心中的青柠
+
+青春像一颗还没有成熟的青柠，外表青涩，味道微酸，却藏着独属于夏天的清香。
+
+在这里继续补充作文正文。每个自然段之间留一个空行，右侧会自动排到作文纸上。
+
+那些曾经以为无法跨过的难题，后来都变成了成长留下的纹路。`;
+
+type CompositionEntry = {
+  id: string;
+  content: string;
+  author: string;
+  showAuthor: boolean;
+};
+
+type ChatMessage = {
+  id: string;
+  name: string;
+  content: string;
+  time: string;
+  showTime: boolean;
+  isMine: boolean;
+};
+
+type ChatRecord = {
+  id: string;
+  messages: ChatMessage[];
+};
+
+const DEFAULT_COMPOSITIONS: CompositionEntry[] = [{
+  id: "composition-1",
+  content: DEFAULT_COMPOSITION,
+  author: "请填写作者名",
+  showAuthor: true,
+}];
+
+const DEFAULT_CHAT_RECORDS: ChatRecord[] = [{
+  id: "chat-1",
+  messages: [
+    { id: "message-1", name: "胡雨", content: "不要跟他们站队，你要好好学习。", time: "20:16", showTime: false, isMine: false },
+    { id: "message-2", name: "徐晴晴", content: "可是如果所有人都不理我呢？", time: "20:17", showTime: false, isMine: false },
+    { id: "message-3", name: "胡雨", content: "那也不要为了合群变成自己不喜欢的样子。", time: "20:18", showTime: false, isMine: false },
+    { id: "message-4", name: "徐晴晴", content: "好，我记住了。", time: "20:19", showTime: false, isMine: false },
+  ],
+}];
+
+const DEFAULT_TEACHER_COMMENT = "感情真挚，描写细腻。继续加油！";
+
+function currentClockTime() {
+  return new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
 function inlineParts(text: string) {
-  return text.split(/(\*\*.*?\*\*)/g).map((part, index) =>
-    part.startsWith("**") && part.endsWith("**") ? (
-      <strong key={index} style={{ color: "#355746", fontWeight: 650 }}>{part.slice(2, -2)}</strong>
-    ) : <React.Fragment key={index}>{part}</React.Fragment>,
+  return text.split(/(\*\*.*?\*\*|\[[^\]]+\]\([^)]+\))/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index} style={{ color: "#355746", fontWeight: 650 }}>{part.slice(2, -2)}</strong>;
+    }
+    const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (link) {
+      return <a key={index} href={link[2]} style={{ color: "#315f47", textDecoration: "none", borderBottom: "1px solid #afc58c" }}>{link[1]}</a>;
+    }
+    return <React.Fragment key={index}>{part}</React.Fragment>;
+  });
+}
+
+function ReadingGuidePreview({ markdown }: { markdown: string }) {
+  const lines = markdown.replace(/<\/?div[^>]*>/g, "").split(/\r?\n/);
+  const title = lines.find((line) => line.trim().startsWith("# "))?.trim().slice(2) || "青柠檬";
+  const firstSectionIndex = lines.findIndex((line) => line.trim().startsWith("## "));
+  const intro = lines.slice(0, firstSectionIndex < 0 ? lines.length : firstSectionIndex)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("# "));
+  const sections: Array<{ title: string; lines: string[] }> = [];
+  lines.forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (line.startsWith("## ")) sections.push({ title: line.slice(3), lines: [] });
+    else if (sections.length) sections[sections.length - 1].lines.push(line);
+  });
+
+  return (
+    <>
+      <section style={{ padding: "44px 28px 36px", textAlign: "center", background: "rgba(255,255,255,.68)", border: "1px solid rgba(147,171,111,.34)", borderRadius: "4px" }}>
+        <div style={{ marginBottom: "12px", fontSize: "23px" }}>🍋‍🟩</div>
+        <div style={{ color: "#869b70", fontFamily: "Georgia,serif", fontSize: "11px", letterSpacing: "5px" }}>READING NOTICE</div>
+        <h1 style={{ margin: "12px 0 8px", color: "#315a45", fontFamily: "'Noto Serif SC','Songti SC',SimSun,serif", fontSize: "36px", fontWeight: 700, letterSpacing: "10px" }}>{title}</h1>
+        <div style={{ margin: "0 auto 22px", width: "42px", height: "2px", background: "#b6cf76" }} />
+        {intro.map((line, index) => {
+          const image = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+          if (image) {
+            const isCharacterCard = image[1].includes("人设卡") || image[2].includes("character-card");
+            return <img key={index} src={resolveImageSource(image[2])} alt={image[1]} style={{ display: "block", width: isCharacterCard ? "min(100%, 420px)" : "100%", height: "auto", margin: "22px auto", borderRadius: "8px" }} />;
+          }
+          return <p key={index} style={{ margin: index ? "10px 0 0" : "0", color: index === 0 ? "#5f775f" : "#526358", fontSize: index === 0 ? "13px" : "16px", lineHeight: 1.9, letterSpacing: index === 0 ? "2px" : ".5px" }}>{inlineParts(line)}</p>;
+        })}
+      </section>
+
+      {sections.map((section, sectionIndex) => (
+        <section key={section.title} style={{ margin: "28px 0", padding: "28px 24px 22px", background: "rgba(255,255,255,.76)", borderLeft: "4px solid #a8c56a", boxShadow: "0 7px 20px rgba(64,88,67,.07)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+            <span style={{ display: "inline-flex", width: "34px", height: "34px", alignItems: "center", justifyContent: "center", borderRadius: "50%", color: "#fff", background: "#66836a", fontFamily: "Georgia,serif", fontSize: "12px" }}>{String(sectionIndex + 1).padStart(2, "0")}</span>
+            <h2 style={{ margin: 0, color: "#315a45", fontFamily: "'Noto Serif SC','Songti SC',SimSun,serif", fontSize: "23px", letterSpacing: "4px" }}>{section.title}</h2>
+          </div>
+          {section.lines.map((line, lineIndex) => {
+            if (!line) return null;
+            if (line === "---") return <div key={lineIndex} style={{ margin: "26px 0", textAlign: "center", color: "#9caf78", letterSpacing: "8px" }}>· · 🍋‍🟩 · ·</div>;
+            if (line.startsWith("### ")) return <h3 key={lineIndex} style={{ margin: "24px 0 12px", color: "#6b8069", fontSize: "16px", letterSpacing: "2px", fontWeight: 700 }}>{line.slice(4)}</h3>;
+            const image = line.match(/^!\[(.*?)\]\((.*?)\)$/);
+            if (image) {
+              const isCharacterCard = image[1].includes("人设卡") || image[2].includes("character-card");
+              return <img key={lineIndex} src={resolveImageSource(image[2])} alt={image[1]} style={{ display: "block", width: isCharacterCard ? "min(100%, 420px)" : "100%", height: "auto", margin: "22px auto", borderRadius: "8px", boxShadow: isCharacterCard ? "0 10px 26px rgba(55,79,61,.12)" : "none" }} />;
+            }
+            const isDirectoryLink = /^\[[^\]]+\]\([^)]+\)$/.test(line);
+            if (isDirectoryLink) {
+              return <p key={lineIndex} style={{ margin: "0 0 10px", padding: "13px 15px", background: "rgba(239,244,229,.84)", borderRadius: "4px", color: "#315f47", fontSize: "16px", lineHeight: 1.6 }}>{inlineParts(line)}<span style={{ float: "right", color: "#91aa70" }}>›</span></p>;
+            }
+            const isPreviewExcerpt = section.title === "高分作文一览";
+            return <p key={lineIndex} style={{ margin: "0 0 16px", padding: isPreviewExcerpt ? "18px 20px" : "0", color: "#35483d", background: isPreviewExcerpt ? "rgba(156,190,105,.14)" : "transparent", border: isPreviewExcerpt ? "1px solid rgba(143,174,94,.32)" : "0", borderLeft: isPreviewExcerpt ? "3px solid rgba(112,148,72,.72)" : "0", borderRadius: isPreviewExcerpt ? "4px" : "0", boxShadow: "none", fontSize: "17px", lineHeight: 1.95, textAlign: "justify", letterSpacing: ".4px" }}>{inlineParts(line)}</p>;
+          })}
+        </section>
+      ))}
+    </>
   );
 }
 
-function ArticlePreview({ markdown }: { markdown: string }) {
+function ChatRecordPreview({ record }: { record: ChatRecord }) {
+  return (
+    <section data-chat-record="true" style={{ margin: "30px 0", padding: "18px", backgroundColor: "rgba(247,250,241,.94)", border: "1px solid rgba(143,171,101,.48)", borderRadius: "12px", boxShadow: "0 8px 22px rgba(63,87,61,.08)", color: "#31483c" }}>
+      <div style={{ margin: "0 0 16px", padding: "0 2px 12px", borderBottom: "1px solid rgba(165,185,134,.38)", color: "#829078", fontSize: "11px", lineHeight: 1.4, letterSpacing: "1.5px", textAlign: "center" }}>
+        聊天记录 · {record.messages.length} 条消息
+      </div>
+      {record.messages.map((message, index) => {
+        const name = message.name.trim() || "未命名";
+        const lines = message.content.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+        const alignRight = message.isMine;
+        return (
+          <React.Fragment key={message.id}>
+            {message.showTime && message.time.trim() && (
+              <div data-chat-time="true" style={{ margin: index ? "18px 0 8px" : "0 0 8px", color: "#8d9989", fontSize: "11px", lineHeight: 1.4, letterSpacing: ".8px", textAlign: "center" }}>{message.time.trim()}</div>
+            )}
+            <div data-chat-message="true" style={{ width: "86%", margin: index && !message.showTime ? (alignRight ? "16px 0 0 auto" : "16px auto 0 0") : (alignRight ? "0 0 0 auto" : "0 auto 0 0"), textAlign: alignRight ? "right" : "left" }}>
+              <div style={{ margin: "0 2px 6px", color: "#617160", fontSize: "12px", lineHeight: 1.4 }}>
+                {alignRight ? (
+                  <><strong style={{ display: "inline-block", verticalAlign: "middle", fontWeight: 650 }}>{name}</strong><span style={{ display: "inline-flex", width: "25px", height: "25px", marginLeft: "7px", alignItems: "center", justifyContent: "center", verticalAlign: "middle", borderRadius: "50%", backgroundColor: "#dbe8bd", color: "#31533f", fontSize: "12px", fontWeight: 700 }}>{name.slice(0, 1)}</span></>
+                ) : (
+                  <><span style={{ display: "inline-flex", width: "25px", height: "25px", marginRight: "7px", alignItems: "center", justifyContent: "center", verticalAlign: "middle", borderRadius: "50%", backgroundColor: "#b9d478", color: "#31533f", fontSize: "12px", fontWeight: 700 }}>{name.slice(0, 1)}</span><strong style={{ display: "inline-block", verticalAlign: "middle", fontWeight: 650 }}>{name}</strong></>
+                )}
+              </div>
+              <div style={{ display: "inline-block", maxWidth: "100%", padding: "12px 15px", backgroundColor: alignRight ? "rgba(224,238,195,.94)" : "rgba(255,255,255,.96)", border: "1px solid rgba(179,198,148,.48)", borderRadius: alignRight ? "13px 4px 13px 13px" : "4px 13px 13px 13px", textAlign: "left" }}>
+                {(lines.length ? lines : ["请填写聊天内容"]).map((line, lineIndex) => (
+                  <p key={lineIndex} style={{ margin: lineIndex ? "7px 0 0" : "0", color: "#304238", fontSize: "16px", lineHeight: 1.75, letterSpacing: ".4px" }}>{line}</p>
+                ))}
+              </div>
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </section>
+  );
+}
+
+function ArticlePreview({ markdown, compositions, chatRecords, teacherComment, showTeacherComment }: { markdown: string; compositions?: CompositionEntry[]; chatRecords?: ChatRecord[]; teacherComment?: string; showTeacherComment?: boolean }) {
   const lines = markdown.replace(/<\/?div[^>]*>/g, "").split(/\r?\n/);
   const nodes: React.ReactNode[] = [];
   let bodyCardNodes: React.ReactNode[] | null = null;
@@ -140,7 +381,7 @@ function ArticlePreview({ markdown }: { markdown: string }) {
   const flushBodyCard = () => {
     if (!bodyCardNodes) return;
     nodes.push(
-      <section key={`body-card-${bodyCardIndex}`} style={{ margin: "34px 6px", padding: "22px 22px 8px", backgroundColor: "rgba(255,255,255,.93)", border: "1px solid rgba(164,185,126,.36)", borderRadius: "6px", boxShadow: "0 8px 24px rgba(49,72,60,.08)" }}>
+      <section key={`body-card-${bodyCardIndex}`} style={{ margin: "34px 0", padding: "22px 22px 8px", backgroundColor: "rgba(255,255,255,.72)" }}>
         {bodyCardNodes}
       </section>,
     );
@@ -148,12 +389,19 @@ function ArticlePreview({ markdown }: { markdown: string }) {
     bodyCardNodes = null;
   };
   let i = 0;
+  let compositionInserted = false;
   while (i < lines.length) {
     const line = lines[i].trim();
     if (!line) { i += 1; continue; }
+    const chatMarker = line.match(/^\[\[聊天记录:([^\]]+)\]\]$/);
+    if (chatMarker) {
+      const record = chatRecords?.find((entry) => entry.id === chatMarker[1]);
+      if (record) pushNode(<ChatRecordPreview key={`chat-${record.id}-${i}`} record={record} />);
+      i += 1; continue;
+    }
     const image = line.match(/^!\[(.*?)\]\((.*?)\)$/);
     if (image) {
-      const src = imageMap[image[2]] || image[2];
+      const src = resolveImageSource(image[2]);
       const isCover = image[2].includes("cover");
       pushNode(<img key={`img-${i}`} src={src} alt={image[1]} style={{ display: "block", width: "100%", height: "auto", margin: isCover ? "0 0 34px" : "34px 0", borderRadius: isCover ? "0" : "4px" }} />);
       i += 1; continue;
@@ -188,6 +436,10 @@ function ArticlePreview({ markdown }: { markdown: string }) {
     if (line.startsWith("### ")) {
       const heading = line.slice(4);
       flushBodyCard();
+      if (heading === "下章预告" && compositions?.length && !compositionInserted) {
+        compositions.forEach((entry) => nodes.push(<CompositionPreview key={entry.id} content={entry.content} author={entry.author} showAuthor={entry.showAuthor} teacherComment={teacherComment} showTeacherComment={showTeacherComment} />));
+        compositionInserted = true;
+      }
       const headingNode = <div key={`h3-${i}`} style={{ margin: /^\d+$/.test(heading) ? "2px 0 24px" : "40px 0 22px", display: "flex", alignItems: "center", gap: "12px", color: "#4f6e58" }}><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /><span style={{ fontFamily: "Georgia,serif", fontSize: "18px", letterSpacing: "3px", fontWeight: 600 }}>{heading}</span><span style={{ height: "1px", flex: 1, background: "#d9e2ca" }} /></div>;
       if (/^\d+$/.test(heading)) {
         bodyCardNodes = [headingNode];
@@ -201,7 +453,72 @@ function ArticlePreview({ markdown }: { markdown: string }) {
     i += 1;
   }
   flushBodyCard();
+  if (compositions?.length && !compositionInserted) compositions.forEach((entry) => nodes.push(<CompositionPreview key={`fallback-${entry.id}`} content={entry.content} author={entry.author} showAuthor={entry.showAuthor} teacherComment={teacherComment} showTeacherComment={showTeacherComment} />));
   return <>{nodes}</>;
+}
+
+function CompositionPreview({ content, author, showAuthor, teacherComment, showTeacherComment }: { content: string; author?: string; showAuthor?: boolean; teacherComment?: string; showTeacherComment?: boolean }) {
+  const columns = 14;
+  const rows = 18;
+  const blocks = content.trim().split(/\n\s*\n/).filter(Boolean);
+  const rawTitle = blocks[0]?.trim() || "作文标题";
+  const hasTitle = rawTitle.startsWith("# ");
+  const title = hasTitle ? rawTitle.slice(2) : "作文标题";
+  const body = hasTitle ? blocks.slice(1) : blocks;
+  const cells: string[] = [];
+  body.forEach((paragraph) => {
+    while (cells.length % columns !== 0) cells.push("");
+    cells.push("", "", ...Array.from(paragraph.replace(/\s+/g, "")));
+    while (cells.length % columns !== 0) cells.push("");
+  });
+  const pages: string[][] = [];
+  const firstPageCapacity = (rows - 2) * columns;
+  pages.push(cells.slice(0, firstPageCapacity));
+  let offset = firstPageCapacity;
+  while (offset < cells.length) {
+    pages.push(cells.slice(offset, offset + rows * columns));
+    offset += rows * columns;
+  }
+  return (
+    <section style={{ width: "100%", margin: "46px 0 20px" }}>
+      {pages.map((page, pageIndex) => (
+        <section
+          key={pageIndex}
+          data-composition-paper="true"
+          data-composition-page={pageIndex}
+          style={{
+            position: "relative",
+            width: "110%",
+            aspectRatio: "543 / 724",
+            margin: pageIndex === 0 ? "0 0 0 -5%" : "68px 0 0 -5%",
+            backgroundColor: "transparent",
+            backgroundImage: "url('/qingningmeng-composition-paper-transparent.png')",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "100% 100%",
+            boxShadow: "0 10px 24px rgba(69,83,56,.14)",
+            color: "#27352e",
+            fontFamily: "KaiTi,STKaiti,'楷体',serif",
+          }}
+        >
+          {pageIndex === 0 && showTeacherComment && teacherComment?.trim() && (
+            <aside data-composition-comment="true" style={{ position: "absolute", zIndex: 3, top: "3.2%", right: "6.8%", width: "124px", color: "#b2342d", fontFamily: "KaiTi,STKaiti,'楷体',serif", fontSize: "14px", fontWeight: 700, lineHeight: 1.55, textAlign: "center", letterSpacing: "1px", transform: "rotate(-4deg)", textShadow: "0 1px 0 rgba(255,255,255,.75)" }}>
+              {teacherComment}
+            </aside>
+          )}
+          <div data-composition-grid="true" style={{ position: "absolute", left: "7.37%", top: "8.29%", width: "85.08%", height: "82.04%", display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gridTemplateRows: "repeat(18, 1fr)" }}>
+            {pageIndex === 0 && <strong data-composition-title="true" style={{ gridColumn: "1 / -1", gridRow: "span 2", display: "flex", alignItems: "center", justifyContent: "center", padding: "2px 0 0", boxSizing: "border-box", fontSize: "21px", lineHeight: 1, fontWeight: 700, letterSpacing: "4px" }}>{title}</strong>}
+            {page.map((character, index) => (
+              <span data-composition-cell="true" key={index} style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 0, minHeight: 0, fontSize: "17px", lineHeight: 1, fontWeight: 500 }}>{character || " "}</span>
+            ))}
+          </div>
+          {pageIndex === pages.length - 1 && showAuthor && author?.trim() && (
+            <div data-composition-author="true" style={{ position: "absolute", right: "8%", bottom: "3.8%", color: "#536257", fontSize: "13px", lineHeight: 1.4, letterSpacing: "1px", textAlign: "right" }}>作者：{author.trim().replace(/^作者[：:]\s*/, "")}</div>
+          )}
+        </section>
+      ))}
+    </section>
+  );
 }
 
 const tools = [
@@ -213,22 +530,142 @@ const tools = [
   { label: "青柠分隔", insert: "\n\n---\n\n" },
 ];
 
+const readingGuideTools = [
+  { label: "插入图片", insert: "\n\n![青柠檬封面](/qingningmeng-cover-vertical.png)\n\n" },
+  { label: "胡雨人设卡", insert: "\n\n![胡雨人设卡](/huyu-character-card.png)\n\n" },
+  { label: "徐晴晴人设卡", insert: "\n\n![徐晴晴人设卡](/xuqingqing-character-card.png)\n\n" },
+  { label: "小说简介", insert: "\n\n## 小说简介\n\n在这里填写小说简介。\n\n" },
+  { label: "高分作文", insert: "\n\n## 高分作文一览\n\n### 《作文标题》\n\n在这里填写高分作文摘录。\n\n" },
+  { label: "类型信息", insert: "\n\n## 小说类型\n\n**题材**：青春校园\n\n**篇幅**：预计 30 万字\n\n**章节**：预计 120 章\n\n" },
+  { label: "付费标准", insert: "\n\n## 付费标准\n\n**免费试读**：请填写\n\n**付费章节**：请填写\n\n" },
+  { label: "合集第一章", insert: "\n\n[合集第一章](请替换第一章文章链接)\n\n" },
+  { label: "合集链接", insert: "\n\n[合集链接](请替换公众号合集链接)\n\n" },
+  { label: "作者简介", insert: "\n\n## 作者简介\n\n**作者**：请填写作者笔名\n\n在这里填写作者介绍。\n\n" },
+];
+
 export default function MiniXiumi() {
   const [markdown, setMarkdown] = useState(INITIAL_MARKDOWN);
+  const [compositions, setCompositions] = useState<CompositionEntry[]>(DEFAULT_COMPOSITIONS);
+  const [chatRecords, setChatRecords] = useState<ChatRecord[]>(DEFAULT_CHAT_RECORDS);
+  const [teacherComment, setTeacherComment] = useState(DEFAULT_TEACHER_COMMENT);
+  const [showTeacherComment, setShowTeacherComment] = useState(true);
+  const [showComposition, setShowComposition] = useState(false);
+  const [showChatRecords, setShowChatRecords] = useState(false);
+  const [isReadingGuide, setIsReadingGuide] = useState(false);
   const [copyState, setCopyState] = useState("复制到公众号（秀米方式）");
   const [storageReady, setStorageReady] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLElement>(null);
   const characters = useMemo(() => markdown.replace(/\s/g, "").length, [markdown]);
+  const chatCharacters = useMemo(() => chatRecords.reduce((total, record) => total + record.messages.reduce((messageTotal, message) => messageTotal + message.name.replace(/\s/g, "").length + message.content.replace(/\s/g, "").length + (message.showTime ? message.time.replace(/\s/g, "").length : 0), 0), 0), [chatRecords]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("qingningmeng-markdown");
-    if (saved) setMarkdown(saved.replace(/🍋(?!‍🟩)/gu, "🍋‍🟩"));
+    const readingGuideMode = window.location.port === "3003";
+    const compositionMode = window.location.port === "3002";
+    const chatMode = window.location.port === "3004";
+    setShowComposition(compositionMode);
+    setShowChatRecords(chatMode);
+    setIsReadingGuide(readingGuideMode);
+    const markdownStorageKey = readingGuideMode ? "qingningmeng-reading-guide" : chatMode ? "qingningmeng-chat-markdown-v1" : "qingningmeng-markdown";
+    const saved = localStorage.getItem(markdownStorageKey);
+    const bodySource = chatMode ? localStorage.getItem("qingningmeng-markdown") : null;
+    let initialContent = saved || bodySource || (readingGuideMode ? READING_GUIDE_MARKDOWN : INITIAL_MARKDOWN);
+    if (readingGuideMode) {
+      initialContent = initialContent.replaceAll(
+        "![阅读须知配图](/请替换图片文件名.png)",
+        "![青柠檬封面](/qingningmeng-cover-vertical.png)",
+      );
+      initialContent = initialContent.replace(
+        /## 目录[\s\S]*?(?=## 作者简介)/,
+        `## 小说合集入口\n\n### 免费合集\n\n[免费合集第一章](https://mp.weixin.qq.com/s/REPLACE_FREE_FIRST_CHAPTER)\n\n[免费合集链接](https://mp.weixin.qq.com/mp/appmsgalbum?album_id=REPLACE_FREE_ALBUM_ID)\n\n### 付费合集\n\n[付费合集第一章](https://mp.weixin.qq.com/s/REPLACE_PAID_FIRST_CHAPTER)\n\n[付费合集链接](https://mp.weixin.qq.com/mp/appmsgalbum?album_id=REPLACE_PAID_ALBUM_ID)\n\n`,
+      );
+      if (/## 小说合集入口[\s\S]*?\*\*收录内容\*\*/.test(initialContent)) {
+        const freeAlbum = initialContent.match(/### 免费合集[\s\S]*?\]\(([^)]+)\)/)?.[1] || "https://mp.weixin.qq.com/mp/appmsgalbum?album_id=REPLACE_FREE_ALBUM_ID";
+        const paidAlbum = initialContent.match(/### 付费合集[\s\S]*?\]\(([^)]+)\)/)?.[1] || "https://mp.weixin.qq.com/mp/appmsgalbum?album_id=REPLACE_PAID_ALBUM_ID";
+        initialContent = initialContent.replace(
+          /## 小说合集入口[\s\S]*?(?=## 作者简介)/,
+          `## 小说合集入口\n\n### 免费合集\n\n[免费合集第一章](https://mp.weixin.qq.com/s/REPLACE_FREE_FIRST_CHAPTER)\n\n[免费合集链接](${freeAlbum})\n\n### 付费合集\n\n[付费合集第一章](https://mp.weixin.qq.com/s/REPLACE_PAID_FIRST_CHAPTER)\n\n[付费合集链接](${paidAlbum})\n\n`,
+        );
+      }
+      if (initialContent.includes("## 小说预览") || (initialContent.includes("## 高分作文一览") && !initialContent.includes("不是催促青柠提前变甜"))) {
+        initialContent = initialContent.replace(
+          /## (?:小说预览|高分作文一览)[\s\S]*?(?=## 小说类型)/,
+          `## 高分作文一览\n\n### 《青柠的味道》\n\n青春像一颗还没有成熟的青柠，外表青涩，味道微酸，却藏着独属于夏天的清香。那些曾经让我们落泪的瞬间，也会在很多年后，成为记忆里最明亮的一束光。\n\n成长不是催促青柠提前变甜，而是允许它带着酸涩慢慢成熟。每一道旧伤都会结成纹路，提醒我们曾经怎样认真地生活过。\n\n### 《雨落下的时候》\n\n雨点落在窗台上，一声接着一声，像有人把没有说出口的话，轻轻敲给夜晚听。我忽然明白，有些成长并不是学会遗忘，而是终于敢回头看那段来路。\n\n雨停以后，操场上积着一层浅浅的水，倒映着被洗亮的天空。我踩过水面，也踩过昨日的胆怯，第一次觉得前方没有想象中那么遥远。\n\n### 《写给未成熟的自己》\n\n如果可以回到过去，我不会催促那个笨拙又敏感的自己快点长大。我会告诉她：慢一点也没有关系，青柠总有成熟的一天，而你也会拥有属于自己的清香。\n\n后来我才明白，真正的成熟不是变得坚硬，而是在看清生活的锋利之后，依然愿意相信温柔、相信自己，也相信明天会有新的光。\n\n`,
+        );
+      } else if (!initialContent.includes("## 高分作文一览")) {
+        initialContent = initialContent.replace(
+          /\n## 小说类型/,
+          `\n## 高分作文一览\n\n### 《青柠的味道》\n\n青春像一颗还没有成熟的青柠，外表青涩，味道微酸，却藏着独属于夏天的清香。那些曾经让我们落泪的瞬间，也会在很多年后，成为记忆里最明亮的一束光。\n\n成长不是催促青柠提前变甜，而是允许它带着酸涩慢慢成熟。每一道旧伤都会结成纹路，提醒我们曾经怎样认真地生活过。\n\n### 《雨落下的时候》\n\n雨点落在窗台上，一声接着一声，像有人把没有说出口的话，轻轻敲给夜晚听。我忽然明白，有些成长并不是学会遗忘，而是终于敢回头看那段来路。\n\n雨停以后，操场上积着一层浅浅的水，倒映着被洗亮的天空。我踩过水面，也踩过昨日的胆怯，第一次觉得前方没有想象中那么遥远。\n\n### 《写给未成熟的自己》\n\n如果可以回到过去，我不会催促那个笨拙又敏感的自己快点长大。我会告诉她：慢一点也没有关系，青柠总有成熟的一天，而你也会拥有属于自己的清香。\n\n后来我才明白，真正的成熟不是变得坚硬，而是在看清生活的锋利之后，依然愿意相信温柔、相信自己，也相信明天会有新的光。\n\n## 小说类型`,
+        );
+      }
+    }
+    setMarkdown(initialContent.replace(/🍋(?!‍🟩)/gu, "🍋‍🟩"));
+    const savedCompositions = localStorage.getItem("qingningmeng-compositions-v2");
+    const savedComposition = localStorage.getItem("qingningmeng-composition");
+    if (savedCompositions) {
+      try {
+        const parsed = JSON.parse(savedCompositions) as CompositionEntry[];
+        if (Array.isArray(parsed) && parsed.length) setCompositions(parsed.map((entry, index) => ({ id: entry.id || `composition-${index + 1}`, content: entry.content || DEFAULT_COMPOSITION, author: entry.author || "请填写作者名", showAuthor: entry.showAuthor !== false })));
+      } catch {
+        setCompositions([{ ...DEFAULT_COMPOSITIONS[0], content: savedComposition || DEFAULT_COMPOSITION }]);
+      }
+    } else if (savedComposition) {
+      setCompositions([{ ...DEFAULT_COMPOSITIONS[0], content: savedComposition }]);
+    }
+    const savedTeacherComment = localStorage.getItem("qingningmeng-teacher-comment");
+    if (savedTeacherComment) setTeacherComment(savedTeacherComment);
+    const savedTeacherCommentVisibility = localStorage.getItem("qingningmeng-teacher-comment-visible");
+    if (savedTeacherCommentVisibility !== null) setShowTeacherComment(savedTeacherCommentVisibility === "true");
+    if (chatMode) {
+      const savedSenderVersion = localStorage.getItem("qingningmeng-chat-records-v3");
+      const savedChatRecords = savedSenderVersion || localStorage.getItem("qingningmeng-chat-records-v2") || localStorage.getItem("qingningmeng-chat-records-v1");
+      if (savedChatRecords) {
+        try {
+          const parsed = JSON.parse(savedChatRecords) as Array<ChatRecord | (ChatMessage & { id: string })>;
+          if (Array.isArray(parsed)) {
+            const isOldDefault = parsed.length === 1 && !("messages" in parsed[0]) && parsed[0].name === "胡雨" && parsed[0].content === "不要跟他们站队，你要好好学习。";
+            if (isOldDefault) {
+              setChatRecords(DEFAULT_CHAT_RECORDS);
+            } else {
+              setChatRecords(parsed.filter((entry) => entry && entry.id).map((entry, recordIndex) => {
+                if ("messages" in entry && Array.isArray(entry.messages)) {
+                  return {
+                    id: entry.id || `chat-${recordIndex + 1}`,
+                    messages: entry.messages.map((message, messageIndex) => ({ id: message.id || `message-${recordIndex + 1}-${messageIndex + 1}`, name: message.name || "未命名", content: message.content || "", time: message.time || "20:16", showTime: message.showTime === true, isMine: Boolean(savedSenderVersion) && message.isMine === true })),
+                  };
+                }
+                return {
+                  id: entry.id || `chat-${recordIndex + 1}`,
+                  messages: [{ id: `message-${recordIndex + 1}-1`, name: entry.name || "未命名", content: entry.content || "", time: entry.time || "20:16", showTime: entry.showTime === true, isMine: Boolean(savedSenderVersion) && entry.isMine === true }],
+                };
+              }));
+            }
+          }
+        } catch {
+          setChatRecords(DEFAULT_CHAT_RECORDS);
+        }
+      }
+    }
     setStorageReady(true);
   }, []);
   useEffect(() => {
-    if (storageReady) localStorage.setItem("qingningmeng-markdown", markdown);
-  }, [markdown, storageReady]);
+    if (storageReady) localStorage.setItem(isReadingGuide ? "qingningmeng-reading-guide" : showChatRecords ? "qingningmeng-chat-markdown-v1" : "qingningmeng-markdown", markdown);
+  }, [markdown, storageReady, isReadingGuide, showChatRecords]);
+  useEffect(() => {
+    if (storageReady && showChatRecords) localStorage.setItem("qingningmeng-chat-records-v3", JSON.stringify(chatRecords));
+  }, [chatRecords, storageReady, showChatRecords]);
+  useEffect(() => {
+    if (storageReady) {
+      localStorage.setItem("qingningmeng-compositions-v2", JSON.stringify(compositions));
+      localStorage.setItem("qingningmeng-composition", compositions[0]?.content || DEFAULT_COMPOSITION);
+    }
+  }, [compositions, storageReady]);
+  useEffect(() => {
+    if (storageReady) localStorage.setItem("qingningmeng-teacher-comment", teacherComment);
+  }, [teacherComment, storageReady]);
+  useEffect(() => {
+    if (storageReady) localStorage.setItem("qingningmeng-teacher-comment-visible", String(showTeacherComment));
+  }, [showTeacherComment, storageReady]);
 
   function insertSnippet(snippet: string) {
     const textarea = textareaRef.current;
@@ -239,9 +676,61 @@ export default function MiniXiumi() {
     requestAnimationFrame(() => { textarea.focus(); textarea.selectionStart = textarea.selectionEnd = start + snippet.length; });
   }
 
+  function updateComposition(id: string, updates: Partial<CompositionEntry>) {
+    setCompositions((current) => current.map((entry) => entry.id === id ? { ...entry, ...updates } : entry));
+  }
+
+  function addComposition() {
+    setCompositions((current) => [...current, {
+      id: `composition-${Date.now()}`,
+      content: `# 新作文标题\n\n在这里填写作文正文。`,
+      author: "请填写作者名",
+      showAuthor: true,
+    }]);
+  }
+
+  function removeComposition(id: string) {
+    setCompositions((current) => current.length > 1 ? current.filter((entry) => entry.id !== id) : current);
+  }
+
+  function updateChatMessage(recordId: string, messageId: string, updates: Partial<ChatMessage>) {
+    setChatRecords((current) => current.map((record) => record.id === recordId ? { ...record, messages: record.messages.map((message) => message.id === messageId ? { ...message, ...updates } : message) } : record));
+  }
+
+  function addChatRecord() {
+    const now = Date.now();
+    const clockTime = currentClockTime();
+    setChatRecords((current) => [...current, {
+      id: `chat-${now}`,
+      messages: [
+        { id: `message-${now}-1`, name: "对方", content: "在这里填写对方发来的消息。", time: clockTime, showTime: false, isMine: false },
+        { id: `message-${now}-2`, name: "对方", content: "在这里填写下一条消息。", time: clockTime, showTime: false, isMine: false },
+      ],
+    }]);
+  }
+
+  function addChatMessage(recordId: string) {
+    const messageId = `message-${Date.now()}`;
+    setChatRecords((current) => current.map((record) => record.id === recordId ? { ...record, messages: [...record.messages, { id: messageId, name: "对方", content: "在这里继续聊天。", time: currentClockTime(), showTime: false, isMine: false }] } : record));
+  }
+
+  function removeChatMessage(recordId: string, messageId: string) {
+    setChatRecords((current) => current.map((record) => record.id === recordId && record.messages.length > 1 ? { ...record, messages: record.messages.filter((message) => message.id !== messageId) } : record));
+  }
+
+  function insertChatRecord(id: string) {
+    insertSnippet(`\n\n[[聊天记录:${id}]]\n\n`);
+  }
+
+  function removeChatRecord(id: string) {
+    setChatRecords((current) => current.filter((entry) => entry.id !== id));
+    setMarkdown((current) => current.replaceAll(`[[聊天记录:${id}]]`, "").replace(/\n{3,}/g, "\n\n"));
+  }
+
   async function copyRichText() {
     const preview = previewRef.current;
     if (!preview) return;
+    try {
     const clone = preview.cloneNode(true) as HTMLElement;
     const embeddedAssets = new Map<string, string>();
     async function embed(url: string) {
@@ -266,8 +755,166 @@ export default function MiniXiumi() {
 
     await Promise.all(Array.from(clone.querySelectorAll("img")).map(async (img) => {
       const src = img.getAttribute("src");
-      if (src && !src.startsWith("data:")) img.setAttribute("src", await embed(new URL(src, window.location.href).href));
+      if (!src || src.startsWith("data:")) return;
+      try {
+        img.setAttribute("src", await embed(new URL(src, window.location.href).href));
+      } catch {
+        // Keep the original URL when an image host blocks local embedding.
+        // This lets the rest of the article copy normally instead of surfacing
+        // an unhandled promise rejection in the editor.
+      }
     }));
+    // Only the composition paper gets a WeChat-safe representation. Keep the
+    // existing paper image and use ordinary text rows—no table—so the current
+    // WeChat layout can be tuned with padding, position and line-height alone.
+    Array.from(clone.querySelectorAll<HTMLElement>("[data-composition-paper]")).forEach((paper) => {
+      const pageIndex = Number(paper.dataset.compositionPage || "0");
+      const title = paper.querySelector<HTMLElement>("[data-composition-title]")?.innerText.trim() || "";
+      const comment = paper.querySelector<HTMLElement>("[data-composition-comment]")?.innerText.trim() || "";
+      const author = paper.querySelector<HTMLElement>("[data-composition-author]")?.innerText.trim() || "";
+      const characters = Array.from(paper.querySelectorAll<HTMLElement>("[data-composition-cell]")).map((cell) => cell.innerText || " ");
+      const rowCount = pageIndex === 0 ? 16 : 18;
+      while (characters.length < rowCount * 14) characters.push(" ");
+
+      const safePaper = document.createElement("section");
+      safePaper.style.display = "block";
+      safePaper.style.width = "100%";
+      safePaper.style.minWidth = "100%";
+      safePaper.style.maxWidth = "100%";
+      safePaper.style.height = "auto";
+      safePaper.style.boxSizing = "border-box";
+      safePaper.style.margin = pageIndex === 0 ? "0 auto" : "68px auto 0";
+      safePaper.style.padding = "0";
+      safePaper.style.overflow = "hidden";
+      safePaper.style.backgroundColor = "transparent";
+      safePaper.style.backgroundImage = `url("${WECHAT_COMPOSITION_BACKGROUND}")`;
+      safePaper.style.backgroundPosition = "center center";
+      safePaper.style.backgroundRepeat = "no-repeat";
+      safePaper.style.backgroundSize = "100% 100%";
+      safePaper.style.color = "#27352e";
+      safePaper.style.fontFamily = "KaiTi,STKaiti,'楷体',serif";
+      safePaper.style.writingMode = "horizontal-tb";
+
+      if (comment) {
+        const commentCharacters = Array.from(comment);
+        const commentLines: string[] = [];
+        for (let index = 0; index < commentCharacters.length; index += 8) {
+          commentLines.push(commentCharacters.slice(index, index + 8).join(""));
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = Math.max(96, 20 + commentLines.length * 38);
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.fillStyle = "#b2342d";
+          context.font = "700 28px KaiTi, STKaiti, serif";
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          commentLines.forEach((line, lineIndex) => {
+            context.fillText(line, canvas.width / 2, 25 + lineIndex * 38);
+          });
+        }
+        const commentRow = document.createElement("p");
+        commentRow.style.display = "block";
+        commentRow.style.height = "48px";
+        commentRow.style.margin = "0";
+        commentRow.style.padding = "3px 28px 0 0";
+        commentRow.style.boxSizing = "border-box";
+        commentRow.style.textAlign = "right";
+        commentRow.style.lineHeight = "0";
+        const commentImage = document.createElement("img");
+        commentImage.src = canvas.toDataURL("image/png");
+        commentImage.alt = comment;
+        commentImage.setAttribute("width", "150");
+        commentImage.style.display = "inline-block";
+        commentImage.style.width = "150px";
+        commentImage.style.maxWidth = "38%";
+        commentImage.style.height = "auto";
+        commentImage.style.margin = "0";
+        commentImage.style.padding = "0";
+        commentRow.appendChild(commentImage);
+        safePaper.appendChild(commentRow);
+      } else {
+        const emptyHeader = document.createElement("p");
+        emptyHeader.innerHTML = "&nbsp;";
+        emptyHeader.style.display = "block";
+        emptyHeader.style.height = "48px";
+        emptyHeader.style.margin = "0";
+        emptyHeader.style.padding = "0";
+        emptyHeader.style.fontSize = "1px";
+        emptyHeader.style.lineHeight = "1px";
+        safePaper.appendChild(emptyHeader);
+      }
+
+      const textLayer = document.createElement("section");
+      textLayer.style.display = "block";
+      textLayer.style.width = "auto";
+      textLayer.style.height = "auto";
+      textLayer.style.margin = "0 7.55% 0 7.37%";
+      textLayer.style.padding = "0";
+      textLayer.style.boxSizing = "border-box";
+
+      if (pageIndex === 0) {
+        const titleLine = document.createElement("p");
+        titleLine.innerText = title;
+        titleLine.style.display = "block";
+        titleLine.style.height = "46px";
+        titleLine.style.margin = "0";
+        titleLine.style.padding = "4.5px 0";
+        titleLine.style.boxSizing = "border-box";
+        titleLine.style.textAlign = "center";
+        titleLine.style.fontSize = "21px";
+        titleLine.style.fontWeight = "700";
+        titleLine.style.letterSpacing = "3px";
+        titleLine.style.lineHeight = "1.75";
+        titleLine.style.whiteSpace = "nowrap";
+        textLayer.appendChild(titleLine);
+      }
+
+      for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+        const row = document.createElement("p");
+        row.style.display = "block";
+        row.style.width = "100%";
+        row.style.height = "24px";
+        row.style.margin = "0";
+        row.style.padding = "3.5px 0";
+        row.style.boxSizing = "border-box";
+        row.style.fontSize = "17px";
+        row.style.fontWeight = "500";
+        row.style.lineHeight = "1";
+        row.style.whiteSpace = "nowrap";
+        row.style.wordBreak = "keep-all";
+        for (let columnIndex = 0; columnIndex < 14; columnIndex += 1) {
+          const cell = document.createElement("span");
+          cell.innerText = characters[rowIndex * 14 + columnIndex] || " ";
+          cell.style.display = "inline-block";
+          cell.style.width = "7.142857%";
+          cell.style.height = "100%";
+          cell.style.padding = "0";
+          cell.style.boxSizing = "border-box";
+          cell.style.textAlign = "center";
+          cell.style.verticalAlign = "middle";
+          row.appendChild(cell);
+        }
+        textLayer.appendChild(row);
+      }
+      safePaper.appendChild(textLayer);
+      const footerSpace = document.createElement("p");
+      footerSpace.innerHTML = author || "&nbsp;";
+      footerSpace.style.display = "block";
+      footerSpace.style.height = "48px";
+      footerSpace.style.margin = "0";
+      footerSpace.style.padding = author ? "13px 8% 0 0" : "0";
+      footerSpace.style.boxSizing = "border-box";
+      footerSpace.style.color = "#536257";
+      footerSpace.style.textAlign = "right";
+      footerSpace.style.letterSpacing = author ? "1px" : "0";
+      footerSpace.style.fontSize = author ? "13px" : "1px";
+      footerSpace.style.lineHeight = author ? "1.5" : "1px";
+      safePaper.appendChild(footerSpace);
+      paper.replaceWith(safePaper);
+    });
     const html = clone.outerHTML;
     const plain = preview.innerText;
     try {
@@ -281,37 +928,115 @@ export default function MiniXiumi() {
       setCopyState("已复制，背景和文字可编辑");
       window.setTimeout(() => setCopyState("复制到公众号（秀米方式）"), 2500);
     } catch { setCopyState("请允许剪贴板权限"); }
+    } catch {
+      setCopyState("复制失败，请刷新后重试");
+      window.setTimeout(() => setCopyState("复制到公众号（秀米方式）"), 2500);
+    }
   }
 
   function downloadMarkdown() {
     const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
-    const anchor = document.createElement("a"); anchor.href = url; anchor.download = "青柠檬-排版稿.md"; anchor.click(); URL.revokeObjectURL(url);
+    const anchor = document.createElement("a"); anchor.href = url; anchor.download = isReadingGuide ? "青柠檬-阅读须知.md" : showChatRecords ? "青柠檬-聊天排版稿.md" : "青柠檬-排版稿.md"; anchor.click(); URL.revokeObjectURL(url);
   }
+
+  const activeTools = isReadingGuide ? readingGuideTools : tools;
 
   return (
     <main className="studio-shell">
       <header className="topbar">
-        <div className="brand"><span className="brand-fruit">青柠</span><div><strong>青柠排版间</strong><small>《青柠檬》专属迷你秀米</small></div></div>
-        <div className="top-actions"><span>{characters.toLocaleString()} 字</span><button className="ghost-button" onClick={downloadMarkdown}>导出 Markdown</button><button className="primary-button" onClick={copyRichText}>{copyState}</button></div>
+        <div className="brand"><span className="brand-fruit">青柠</span><div><strong>青柠排版间</strong><small>{isReadingGuide ? "《青柠檬》阅读须知版" : showComposition ? "正文＋作文纸版" : showChatRecords ? "正文＋聊天记录版" : "《青柠檬》正文版"}</small></div></div>
+        <div className="top-actions"><span>{(characters + (showComposition ? compositions.reduce((total, entry) => total + entry.content.replace(/\s/g, "").length, 0) : 0) + (showChatRecords ? chatCharacters : 0)).toLocaleString()} 字</span><button className="ghost-button" onClick={downloadMarkdown}>导出 Markdown</button><button className="primary-button" onClick={copyRichText}>{copyState}</button></div>
       </header>
       <div className="workspace">
         <aside className="toolbox">
           <div className="toolbox-title">常用组件</div><p>点击后插入到光标位置</p>
-          <div className="tool-grid">{tools.map((tool) => <button key={tool.label} onClick={() => insertSnippet(tool.insert)}>{tool.label}</button>)}</div>
+          <div className="tool-grid">{activeTools.map((tool) => <button key={tool.label} onClick={() => insertSnippet(tool.insert)}>{tool.label}</button>)}</div>
           <div className="palette-card"><strong>青柠色板</strong><div className="swatches"><i /><i /><i /><i /></div><small>墨绿 · 青柠 · 奶油白 · 雾蓝</small></div>
-          <div className="tip-card">内容会自动保存在当前浏览器。点击“复制到公众号”后，正文仍是真实文字，背景直接使用公众号公共素材库图片。</div>
+          <div className="tip-card">{isReadingGuide ? "图片放进 public 文件夹后，正文写成：![图片说明](/图片名.png)。合集链接写成：[入口名称](公众号合集链接)。" : showChatRecords ? "一段聊天可以添加很多条消息。先把正文光标放到需要的位置，再点击“插入整段聊天”。聊天框和正文都会保持为真实文字。" : "内容会自动保存在当前浏览器。点击“复制到公众号”后，正文仍是真实文字，背景直接使用公众号公共素材库图片。"}</div>
         </aside>
-        <section className="editor-pane">
-          <div className="pane-heading"><strong>Markdown 正文</strong><span>实时保存</span></div>
-          <textarea ref={textareaRef} value={markdown} onChange={(event) => setMarkdown(event.target.value)} spellCheck={false} aria-label="Markdown 正文编辑器" />
+        <section className={`editor-pane${showComposition ? " with-composition" : ""}${showChatRecords ? " with-chat" : ""}`}>
+          <div className="pane-heading"><strong>{isReadingGuide ? "阅读须知内容" : "Markdown 正文"}</strong><span>实时保存</span></div>
+          <textarea className="markdown-editor" ref={textareaRef} value={markdown} onChange={(event) => setMarkdown(event.target.value)} spellCheck={false} aria-label={isReadingGuide ? "阅读须知编辑器" : "Markdown 正文编辑器"} />
+          {showChatRecords && (
+            <div className="chat-editor-panel">
+              <div className="pane-heading"><strong>聊天记录库（{chatRecords.length} 段）</strong><button type="button" className="chat-add-button" onClick={addChatRecord}>＋ 新增一段聊天</button></div>
+              <div className="chat-list">
+                {chatRecords.length === 0 && <div className="chat-empty">还没有聊天记录，点击“新增一段聊天”开始添加。</div>}
+                {chatRecords.map((record, index) => (
+                  <section className="chat-entry" key={record.id}>
+                    <div className="chat-entry-heading">
+                      <strong>聊天段落 {String(index + 1).padStart(2, "0")}</strong>
+                      <span>{record.messages.length} 条消息 · 可重复插入</span>
+                      <button type="button" onClick={() => removeChatRecord(record.id)}>删除整段</button>
+                    </div>
+                    <div className="chat-message-list">
+                      {record.messages.map((message, messageIndex) => (
+                        <div className="chat-message-editor" key={message.id}>
+                          <div className="chat-message-heading">
+                            <span>消息 {String(messageIndex + 1).padStart(2, "0")}</span>
+                            <button type="button" onClick={() => removeChatMessage(record.id, message.id)} disabled={record.messages.length === 1}>删除此条</button>
+                          </div>
+                          <div className="chat-sender-control">
+                            <span>发送方</span>
+                            <button type="button" aria-pressed={message.isMine} onClick={() => updateChatMessage(record.id, message.id, { isMine: !message.isMine })}>{message.isMine ? "我发的" : "对方发的"}</button>
+                            <small>点击切换</small>
+                          </div>
+                          <label className="chat-name-field">
+                            <span>名字</span>
+                            <input value={message.name} onChange={(event) => updateChatMessage(record.id, message.id, { name: event.target.value })} placeholder="请输入角色名字" aria-label={`聊天段落 ${index + 1} 消息 ${messageIndex + 1} 名字`} />
+                          </label>
+                          <div className="chat-time-control">
+                            <span>时间</span>
+                            <input value={message.time} onChange={(event) => updateChatMessage(record.id, message.id, { time: event.target.value })} placeholder="例如 20:16" aria-label={`聊天段落 ${index + 1} 消息 ${messageIndex + 1} 时间`} />
+                            <button type="button" aria-pressed={message.showTime} onClick={() => updateChatMessage(record.id, message.id, { showTime: !message.showTime })}>{message.showTime ? "取消时间" : "插入时间"}</button>
+                          </div>
+                          <label className="chat-content-field">
+                            <span>内容</span>
+                            <textarea value={message.content} onChange={(event) => updateChatMessage(record.id, message.id, { content: event.target.value })} placeholder="请输入聊天内容，多行内容会保留换行" spellCheck={false} aria-label={`聊天段落 ${index + 1} 消息 ${messageIndex + 1} 内容`} />
+                          </label>
+                        </div>
+                      ))}
+                      <button type="button" className="chat-add-message-button" onClick={() => addChatMessage(record.id)}>＋ 添加下一条消息</button>
+                    </div>
+                    <button type="button" className="chat-insert-button" onClick={() => insertChatRecord(record.id)}>插入整段聊天到正文光标处</button>
+                  </section>
+                ))}
+              </div>
+            </div>
+          )}
+          {showComposition && (
+            <div className="composition-editor-panel">
+              <div className="pane-heading"><strong>作文板块（{compositions.length} 篇）</strong><button type="button" className="composition-add-button" onClick={addComposition}>＋ 添加作文</button></div>
+              <div className="teacher-comment-control">
+                <label htmlFor="teacher-comment">红笔批语</label>
+                <input id="teacher-comment" value={teacherComment} onChange={(event) => setTeacherComment(event.target.value)} disabled={!showTeacherComment} aria-label="红笔批语文字" />
+                <button type="button" onClick={() => setShowTeacherComment((visible) => !visible)}>{showTeacherComment ? "隐藏" : "显示"}</button>
+              </div>
+              <div className="composition-list">
+                {compositions.map((entry, index) => (
+                  <section className="composition-entry" key={entry.id}>
+                    <div className="composition-entry-heading">
+                      <strong>作文 {String(index + 1).padStart(2, "0")}</strong>
+                      <span>首行用 # 写标题</span>
+                      <button type="button" onClick={() => removeComposition(entry.id)} disabled={compositions.length === 1}>删除</button>
+                    </div>
+                    <div className="composition-author-control">
+                      <label htmlFor={`composition-author-${entry.id}`}>作者名</label>
+                      <input id={`composition-author-${entry.id}`} value={entry.author} onChange={(event) => updateComposition(entry.id, { author: event.target.value })} placeholder="请输入作者名" aria-label={`作文 ${index + 1} 作者名`} />
+                      <button type="button" onClick={() => updateComposition(entry.id, { showAuthor: !entry.showAuthor })}>{entry.showAuthor ? "隐藏作者" : "显示作者"}</button>
+                    </div>
+                    <textarea value={entry.content} onChange={(event) => updateComposition(entry.id, { content: event.target.value })} spellCheck={false} aria-label={`作文 ${index + 1} 编辑器`} />
+                  </section>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
         <section className="preview-pane">
-          <div className="pane-heading"><strong>公众号预览</strong><span>390 px</span></div>
+          <div className="pane-heading"><strong>公众号后台宽屏预览</strong><span>677 px</span></div>
           <div className="phone-stage">
-            <section ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "14px 14px 44px", backgroundColor: "#fffdf5", backgroundImage: `url("${WECHAT_BACKGROUND}")`, backgroundRepeat: "repeat-y", backgroundPosition: "center top", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}>
-              <section style={{ padding: "0 18px 42px", backgroundColor: "rgba(255,253,247,0.94)", border: "1px solid rgba(207,216,194,0.82)" }}>
-                <ArticlePreview markdown={markdown} />
-              </section>
+            <section ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "14px 14px 44px", backgroundColor: "transparent", backgroundImage: `url("${WECHAT_BACKGROUND}")`, backgroundRepeat: "repeat-y", backgroundPosition: "center top", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}>
+              {isReadingGuide ? <ReadingGuidePreview markdown={markdown} /> : <ArticlePreview markdown={markdown} compositions={showComposition ? compositions : undefined} chatRecords={showChatRecords ? chatRecords : undefined} teacherComment={teacherComment} showTeacherComment={showTeacherComment} />}
             </section>
           </div>
         </section>
