@@ -1,0 +1,1 @@
+{"name":"qingning-local-preview","private":true,"type":"module","scripts":{"dev":"vite --host 127.0.0.1 --port 3000"},"dependencies":{"react":"19.2.6","react-dom":"19.2.6","vite":"8.0.13","tailwindcss":"4.2.1","@tailwindcss/postcss":"4.2.1"}}

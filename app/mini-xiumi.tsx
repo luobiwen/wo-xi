@@ -23,7 +23,7 @@ const INITIAL_MARKDOWN = `# 青柠檬
 >
 > 借了狐仙的力量，就要还他一辈子的思念。
 
-![章节氛围图](qingningmeng-divider.png)
+![章节氛围图](/divider4.jpg)
 
 ### 01
 
@@ -197,7 +197,7 @@ const READING_GUIDE_MARKDOWN = `# 青柠檬
 
 const imageMap: Record<string, string> = {
   "qingningmeng-cover.png": "/qingningmeng-cover-anime.png",
-  "qingningmeng-divider.png": "/qingningmeng-divider.png",
+  "qingningmeng-divider.png": "/divider4.jpg",
   "qingningmeng-background.png": "/qingningmeng-background-seamless.png",
   "胡雨人设卡.png": "/huyu-character-card.png",
   "徐晴晴人设卡.png": "/xuqingqing-character-card.png",
@@ -228,8 +228,6 @@ type ChatMessage = {
   id: string;
   name: string;
   content: string;
-  time: string;
-  showTime: boolean;
   isMine: boolean;
 };
 
@@ -248,18 +246,21 @@ const DEFAULT_COMPOSITIONS: CompositionEntry[] = [{
 const DEFAULT_CHAT_RECORDS: ChatRecord[] = [{
   id: "chat-1",
   messages: [
-    { id: "message-1", name: "胡雨", content: "不要跟他们站队，你要好好学习。", time: "20:16", showTime: false, isMine: false },
-    { id: "message-2", name: "徐晴晴", content: "可是如果所有人都不理我呢？", time: "20:17", showTime: false, isMine: false },
-    { id: "message-3", name: "胡雨", content: "那也不要为了合群变成自己不喜欢的样子。", time: "20:18", showTime: false, isMine: false },
-    { id: "message-4", name: "徐晴晴", content: "好，我记住了。", time: "20:19", showTime: false, isMine: false },
+    { id: "message-1", name: "胡雨", content: "不要跟他们站队，你要好好学习。", isMine: false },
+    { id: "message-2", name: "徐晴晴", content: "可是如果所有人都不理我呢？", isMine: false },
+    { id: "message-3", name: "胡雨", content: "那也不要为了合群变成自己不喜欢的样子。", isMine: false },
+    { id: "message-4", name: "徐晴晴", content: "好，我记住了。", isMine: false },
   ],
 }];
 
 const DEFAULT_TEACHER_COMMENT = "感情真挚，描写细腻。继续加油！";
 
-function currentClockTime() {
-  return new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
-}
+const AUTHOR_SIGNATURES: Record<string, string> = {
+  "胡雨": "/signature-huyu.png",
+  "徐晴晴": "/signature-xuqq.png",
+  "小秋": "/signature-xiaoqiu.png",
+  "小哲": "/signature-xiaozhe.png",
+};
 
 function inlineParts(text: string) {
   return text.split(/(\*\*.*?\*\*|\[[^\]]+\]\([^)]+\))/g).map((part, index) => {
@@ -336,19 +337,12 @@ function ReadingGuidePreview({ markdown }: { markdown: string }) {
 function ChatRecordPreview({ record }: { record: ChatRecord }) {
   return (
     <section data-chat-record="true" style={{ margin: "30px 0", padding: "18px", backgroundColor: "rgba(247,250,241,.94)", border: "1px solid rgba(143,171,101,.48)", borderRadius: "12px", boxShadow: "0 8px 22px rgba(63,87,61,.08)", color: "#31483c" }}>
-      <div style={{ margin: "0 0 16px", padding: "0 2px 12px", borderBottom: "1px solid rgba(165,185,134,.38)", color: "#829078", fontSize: "11px", lineHeight: 1.4, letterSpacing: "1.5px", textAlign: "center" }}>
-        聊天记录 · {record.messages.length} 条消息
-      </div>
       {record.messages.map((message, index) => {
         const name = message.name.trim() || "未命名";
         const lines = message.content.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
         const alignRight = message.isMine;
         return (
-          <React.Fragment key={message.id}>
-            {message.showTime && message.time.trim() && (
-              <div data-chat-time="true" style={{ margin: index ? "18px 0 8px" : "0 0 8px", color: "#8d9989", fontSize: "11px", lineHeight: 1.4, letterSpacing: ".8px", textAlign: "center" }}>{message.time.trim()}</div>
-            )}
-            <div data-chat-message="true" style={{ width: "86%", margin: index && !message.showTime ? (alignRight ? "16px 0 0 auto" : "16px auto 0 0") : (alignRight ? "0 0 0 auto" : "0 auto 0 0"), textAlign: alignRight ? "right" : "left" }}>
+            <div key={message.id} data-chat-message="true" style={{ width: "86%", margin: index ? (alignRight ? "16px 0 0 auto" : "16px auto 0 0") : (alignRight ? "0 0 0 auto" : "0 auto 0 0"), textAlign: alignRight ? "right" : "left" }}>
               <div style={{ margin: "0 2px 6px", color: "#617160", fontSize: "12px", lineHeight: 1.4 }}>
                 {alignRight ? (
                   <><strong style={{ display: "inline-block", verticalAlign: "middle", fontWeight: 650 }}>{name}</strong><span style={{ display: "inline-flex", width: "25px", height: "25px", marginLeft: "7px", alignItems: "center", justifyContent: "center", verticalAlign: "middle", borderRadius: "50%", backgroundColor: "#dbe8bd", color: "#31533f", fontSize: "12px", fontWeight: 700 }}>{name.slice(0, 1)}</span></>
@@ -362,7 +356,6 @@ function ChatRecordPreview({ record }: { record: ChatRecord }) {
                 ))}
               </div>
             </div>
-          </React.Fragment>
         );
       })}
     </section>
@@ -392,7 +385,11 @@ function ArticlePreview({ markdown, compositions, chatRecords, teacherComment, s
   let compositionInserted = false;
   while (i < lines.length) {
     const line = lines[i].trim();
-    if (!line) { i += 1; continue; }
+    if (!line) {
+      pushNode(<p key={`blank-${i}`} data-blank-line="true" style={{ margin: 0, height: "36px", lineHeight: "36px", fontSize: "18px" }}>{"\u00a0"}</p>);
+      i += 1;
+      continue;
+    }
     const chatMarker = line.match(/^\[\[聊天记录:([^\]]+)\]\]$/);
     if (chatMarker) {
       const record = chatRecords?.find((entry) => entry.id === chatMarker[1]);
@@ -403,7 +400,8 @@ function ArticlePreview({ markdown, compositions, chatRecords, teacherComment, s
     if (image) {
       const src = resolveImageSource(image[2]);
       const isCover = image[2].includes("cover");
-      pushNode(<img key={`img-${i}`} src={src} alt={image[1]} style={{ display: "block", width: "100%", height: "auto", margin: isCover ? "0 0 34px" : "34px 0", borderRadius: isCover ? "0" : "4px" }} />);
+      const coverFade = "linear-gradient(to bottom, transparent 0%, #000 4%, #000 80%, transparent 100%)";
+      pushNode(<img key={`img-${i}`} src={src} alt={image[1]} data-cover-fade={isCover ? "true" : undefined} style={{ display: "block", width: "100%", height: "auto", margin: isCover ? "0 0 16px" : "34px 0", borderRadius: isCover ? "8px 8px 0 0" : "4px", ...(isCover ? { maskImage: coverFade, WebkitMaskImage: coverFade } : {}) }} />);
       i += 1; continue;
     }
     if (line === "---") {
@@ -512,8 +510,10 @@ function CompositionPreview({ content, author, showAuthor, teacherComment, showT
               <span data-composition-cell="true" key={index} style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 0, minHeight: 0, fontSize: "17px", lineHeight: 1, fontWeight: 500 }}>{character || " "}</span>
             ))}
           </div>
-          {pageIndex === pages.length - 1 && showAuthor && author?.trim() && (
-            <div data-composition-author="true" style={{ position: "absolute", right: "8%", bottom: "3.8%", color: "#536257", fontSize: "13px", lineHeight: 1.4, letterSpacing: "1px", textAlign: "right" }}>作者：{author.trim().replace(/^作者[：:]\s*/, "")}</div>
+          {pageIndex === pages.length - 1 && showAuthor && author?.trim() && AUTHOR_SIGNATURES[author.trim().replace(/^作者[：:]\s*/, "")] ? (
+            <img data-composition-author="true" data-signature="true" src={AUTHOR_SIGNATURES[author.trim().replace(/^作者[：:]\s*/, "")]} alt={author.trim()} style={{ position: "absolute", right: "7%", bottom: "7%", width: "25%", height: "auto", mixBlendMode: "multiply" }} />
+          ) : pageIndex === pages.length - 1 && showAuthor && author?.trim() && (
+            <div data-composition-author="true" style={{ position: "absolute", right: "8%", bottom: "6.5%", color: "#32443a", fontSize: "52px", lineHeight: 1.2, letterSpacing: "2px", textAlign: "right", fontFamily: "'Liu Jian Mao Cao','Zhi Mang Xing','STXingkai','华文行楷','Xingkai SC',KaiTi,STKaiti,'楷体',cursive", transform: "rotate(-3deg)", textShadow: "0 1px 1px rgba(255,255,255,.6)" }}>{author.trim().replace(/^作者[：:]\s*/, "")}</div>
           )}
         </section>
       ))}
@@ -525,7 +525,7 @@ const tools = [
   { label: "章节标题", insert: "\n\n## 新章节\n\n" },
   { label: "小节编号", insert: "\n\n### 02\n\n" },
   { label: "青柠引用", insert: "\n\n> **青柠日记**\n>\n> 在这里写下没有说出口的话。\n\n" },
-  { label: "章节配图", insert: "\n\n![章节氛围图](qingningmeng-divider.png)\n\n" },
+  { label: "章节配图", insert: "\n\n![章节氛围图](/divider4.jpg)\n\n" },
   { label: "背景卡片", insert: "\n\n> **本章序言**\n>\n> 在这里写本章引言。\n\n" },
   { label: "青柠分隔", insert: "\n\n---\n\n" },
 ];
@@ -550,20 +550,23 @@ export default function MiniXiumi() {
   const [teacherComment, setTeacherComment] = useState(DEFAULT_TEACHER_COMMENT);
   const [showTeacherComment, setShowTeacherComment] = useState(true);
   const [showComposition, setShowComposition] = useState(false);
+  const [compositionCollapsed, setCompositionCollapsed] = useState(false);
   const [showChatRecords, setShowChatRecords] = useState(false);
   const [isReadingGuide, setIsReadingGuide] = useState(false);
   const [copyState, setCopyState] = useState("复制到公众号（秀米方式）");
   const [storageReady, setStorageReady] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const markdownRef = useRef(markdown);
+  markdownRef.current = markdown;
   const previewRef = useRef<HTMLElement>(null);
   const characters = useMemo(() => markdown.replace(/\s/g, "").length, [markdown]);
-  const chatCharacters = useMemo(() => chatRecords.reduce((total, record) => total + record.messages.reduce((messageTotal, message) => messageTotal + message.name.replace(/\s/g, "").length + message.content.replace(/\s/g, "").length + (message.showTime ? message.time.replace(/\s/g, "").length : 0), 0), 0), [chatRecords]);
+  const chatCharacters = useMemo(() => chatRecords.reduce((total, record) => total + record.messages.reduce((messageTotal, message) => messageTotal + message.name.replace(/\s/g, "").length + message.content.replace(/\s/g, "").length, 0), 0), [chatRecords]);
 
   useEffect(() => {
     const readingGuideMode = window.location.port === "3003";
     const compositionMode = window.location.port === "3002";
     const chatMode = window.location.port === "3004";
-    setShowComposition(compositionMode);
+    setShowComposition(compositionMode || chatMode);
     setShowChatRecords(chatMode);
     setIsReadingGuide(readingGuideMode);
     const markdownStorageKey = readingGuideMode ? "qingningmeng-reading-guide" : chatMode ? "qingningmeng-chat-markdown-v1" : "qingningmeng-markdown";
@@ -599,6 +602,10 @@ export default function MiniXiumi() {
         );
       }
     }
+    initialContent = initialContent.replace(
+      /!\[章节氛围图\]\([^)]+\)/g,
+      "![章节氛围图](/divider4.jpg)",
+    );
     setMarkdown(initialContent.replace(/🍋(?!‍🟩)/gu, "🍋‍🟩"));
     const savedCompositions = localStorage.getItem("qingningmeng-compositions-v2");
     const savedComposition = localStorage.getItem("qingningmeng-composition");
@@ -631,12 +638,12 @@ export default function MiniXiumi() {
                 if ("messages" in entry && Array.isArray(entry.messages)) {
                   return {
                     id: entry.id || `chat-${recordIndex + 1}`,
-                    messages: entry.messages.map((message, messageIndex) => ({ id: message.id || `message-${recordIndex + 1}-${messageIndex + 1}`, name: message.name || "未命名", content: message.content || "", time: message.time || "20:16", showTime: message.showTime === true, isMine: Boolean(savedSenderVersion) && message.isMine === true })),
+                    messages: entry.messages.map((message, messageIndex) => ({ id: message.id || `message-${recordIndex + 1}-${messageIndex + 1}`, name: message.name || "未命名", content: message.content || "", isMine: Boolean(savedSenderVersion) && message.isMine === true })),
                   };
                 }
                 return {
                   id: entry.id || `chat-${recordIndex + 1}`,
-                  messages: [{ id: `message-${recordIndex + 1}-1`, name: entry.name || "未命名", content: entry.content || "", time: entry.time || "20:16", showTime: entry.showTime === true, isMine: Boolean(savedSenderVersion) && entry.isMine === true }],
+                  messages: [{ id: `message-${recordIndex + 1}-1`, name: entry.name || "未命名", content: entry.content || "", isMine: Boolean(savedSenderVersion) && entry.isMine === true }],
                 };
               }));
             }
@@ -672,8 +679,17 @@ export default function MiniXiumi() {
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    setMarkdown(markdown.slice(0, start) + snippet + markdown.slice(end));
-    requestAnimationFrame(() => { textarea.focus(); textarea.selectionStart = textarea.selectionEnd = start + snippet.length; });
+    const current = markdownRef.current;
+    const next = current.slice(0, start) + snippet + current.slice(end);
+    markdownRef.current = next;
+    const cursor = start + snippet.length;
+    setMarkdown(next);
+    requestAnimationFrame(() => {
+      const editor = textareaRef.current;
+      if (!editor) return;
+      editor.focus({ preventScroll: true });
+      editor.selectionStart = editor.selectionEnd = cursor;
+    });
   }
 
   function updateComposition(id: string, updates: Partial<CompositionEntry>) {
@@ -699,19 +715,18 @@ export default function MiniXiumi() {
 
   function addChatRecord() {
     const now = Date.now();
-    const clockTime = currentClockTime();
     setChatRecords((current) => [...current, {
       id: `chat-${now}`,
       messages: [
-        { id: `message-${now}-1`, name: "对方", content: "在这里填写对方发来的消息。", time: clockTime, showTime: false, isMine: false },
-        { id: `message-${now}-2`, name: "对方", content: "在这里填写下一条消息。", time: clockTime, showTime: false, isMine: false },
+        { id: `message-${now}-1`, name: "对方", content: "在这里填写对方发来的消息。", isMine: false },
+        { id: `message-${now}-2`, name: "对方", content: "在这里填写下一条消息。", isMine: false },
       ],
     }]);
   }
 
   function addChatMessage(recordId: string) {
     const messageId = `message-${Date.now()}`;
-    setChatRecords((current) => current.map((record) => record.id === recordId ? { ...record, messages: [...record.messages, { id: messageId, name: "对方", content: "在这里继续聊天。", time: currentClockTime(), showTime: false, isMine: false }] } : record));
+    setChatRecords((current) => current.map((record) => record.id === recordId ? { ...record, messages: [...record.messages, { id: messageId, name: "对方", content: "在这里继续聊天。", isMine: false }] } : record));
   }
 
   function removeChatMessage(recordId: string, messageId: string) {
@@ -733,16 +748,42 @@ export default function MiniXiumi() {
     try {
     const clone = preview.cloneNode(true) as HTMLElement;
     const embeddedAssets = new Map<string, string>();
-    async function embed(url: string) {
-      if (embeddedAssets.has(url)) return embeddedAssets.get(url)!;
-      const blob = await fetch(url).then((response) => response.blob());
+    async function embed(url: string, fadeCover = false) {
+      const cacheKey = `${fadeCover ? "cover:" : ""}${url}`;
+      if (embeddedAssets.has(cacheKey)) return embeddedAssets.get(cacheKey)!;
+      let blob = await fetch(url).then((response) => {
+        if (!response.ok) throw new Error("图片下载失败");
+        return response.blob();
+      });
+      if (fadeCover) {
+        const bitmap = await createImageBitmap(blob);
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const context = canvas.getContext("2d");
+          if (!context) throw new Error("无法生成封面过渡");
+          context.drawImage(bitmap, 0, 0);
+          // Bake the fade into opaque pixels so WeChat need not preserve masks.
+          const fade = context.createLinearGradient(0, 0, 0, canvas.height);
+          fade.addColorStop(0, "rgba(251,250,243,1)");
+          fade.addColorStop(0.04, "rgba(251,250,243,0)");
+          fade.addColorStop(0.80, "rgba(251,250,243,0)");
+          fade.addColorStop(1, "rgba(251,250,243,1)");
+          context.fillStyle = fade;
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((result) => result ? resolve(result) : reject(new Error("封面生成失败")), "image/png"));
+        } finally {
+          bitmap.close();
+        }
+      }
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result));
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-      embeddedAssets.set(url, dataUrl);
+      embeddedAssets.set(cacheKey, dataUrl);
       return dataUrl;
     }
 
@@ -755,10 +796,17 @@ export default function MiniXiumi() {
 
     await Promise.all(Array.from(clone.querySelectorAll("img")).map(async (img) => {
       const src = img.getAttribute("src");
-      if (!src || src.startsWith("data:")) return;
+      const fadeCover = img.dataset.coverFade === "true";
+      if (!src || (src.startsWith("data:") && !fadeCover)) return;
       try {
-        img.setAttribute("src", await embed(new URL(src, window.location.href).href));
+        img.setAttribute("src", await embed(new URL(src, window.location.href).href, fadeCover));
+        if (fadeCover) {
+          img.style.removeProperty("mask-image");
+          img.style.removeProperty("-webkit-mask-image");
+          delete img.dataset.coverFade;
+        }
       } catch {
+        if (fadeCover) throw new Error("封面过渡生成失败，请确认封面图片可加载后重试");
         // Keep the original URL when an image host blocks local embedding.
         // This lets the rest of the article copy normally instead of surfacing
         // an unhandled promise rejection in the editor.
@@ -767,11 +815,13 @@ export default function MiniXiumi() {
     // Only the composition paper gets a WeChat-safe representation. Keep the
     // existing paper image and use ordinary text rows—no table—so the current
     // WeChat layout can be tuned with padding, position and line-height alone.
-    Array.from(clone.querySelectorAll<HTMLElement>("[data-composition-paper]")).forEach((paper) => {
+    for (const paper of Array.from(clone.querySelectorAll<HTMLElement>("[data-composition-paper]"))) {
       const pageIndex = Number(paper.dataset.compositionPage || "0");
       const title = paper.querySelector<HTMLElement>("[data-composition-title]")?.innerText.trim() || "";
       const comment = paper.querySelector<HTMLElement>("[data-composition-comment]")?.innerText.trim() || "";
-      const author = paper.querySelector<HTMLElement>("[data-composition-author]")?.innerText.trim() || "";
+      const authorNode = paper.querySelector<HTMLElement>("[data-composition-author]");
+      const signatureSrc = paper.querySelector<HTMLImageElement>("img[data-composition-author][data-signature]")?.getAttribute("src") || "";
+      const author = authorNode?.innerText.trim() || (signatureSrc ? authorNode?.getAttribute("alt") || "" : "");
       const characters = Array.from(paper.querySelectorAll<HTMLElement>("[data-composition-cell]")).map((cell) => cell.innerText || " ");
       const rowCount = pageIndex === 0 ? 16 : 18;
       while (characters.length < rowCount * 14) characters.push(" ");
@@ -905,16 +955,48 @@ export default function MiniXiumi() {
       footerSpace.style.display = "block";
       footerSpace.style.height = "48px";
       footerSpace.style.margin = "0";
-      footerSpace.style.padding = author ? "13px 8% 0 0" : "0";
+      footerSpace.style.padding = author ? "13px 8% 14px 0" : "0";
       footerSpace.style.boxSizing = "border-box";
-      footerSpace.style.color = "#536257";
+      footerSpace.style.color = "#3f4f45";
+      footerSpace.style.fontFamily = "'Liu Jian Mao Cao','Zhi Mang Xing','STXingkai','华文行楷','Xingkai SC',KaiTi,STKaiti,'楷体',cursive";
+      footerSpace.style.fontStyle = "italic";
+      footerSpace.style.fontSize = author ? "52px" : "1px";
+      footerSpace.style.fontWeight = "";
+      footerSpace.style.color = "#32443a";
+      footerSpace.style.textShadow = "none";
       footerSpace.style.textAlign = "right";
-      footerSpace.style.letterSpacing = author ? "1px" : "0";
-      footerSpace.style.fontSize = author ? "13px" : "1px";
+      footerSpace.style.letterSpacing = author ? "2px" : "0";
       footerSpace.style.lineHeight = author ? "1.5" : "1px";
-      safePaper.appendChild(footerSpace);
+      if (signatureSrc) {
+        const signatureImage = document.createElement("img");
+        try {
+          signatureImage.src = await embed(new URL(signatureSrc, window.location.href).href);
+        } catch {
+          signatureImage.src = signatureSrc;
+        }
+        signatureImage.alt = author;
+        signatureImage.setAttribute("width", "24.5%");
+        signatureImage.style.display = "inline-block";
+        signatureImage.style.width = "24.5%";
+        signatureImage.style.maxWidth = "40%";
+        signatureImage.style.height = "auto";
+        signatureImage.style.margin = "0";
+        signatureImage.style.padding = "0";
+        signatureImage.style.verticalAlign = "middle";
+        const signatureRow = document.createElement("p");
+        signatureRow.style.display = "block";
+        signatureRow.style.height = "56px";
+        signatureRow.style.margin = "0";
+        signatureRow.style.padding = "6px 8% 6px 0";
+        signatureRow.style.boxSizing = "border-box";
+        signatureRow.style.textAlign = "right";
+        signatureRow.appendChild(signatureImage);
+        safePaper.appendChild(signatureRow);
+      } else {
+        safePaper.appendChild(footerSpace);
+      }
       paper.replaceWith(safePaper);
-    });
+    }
     const html = clone.outerHTML;
     const plain = preview.innerText;
     try {
@@ -985,11 +1067,6 @@ export default function MiniXiumi() {
                             <span>名字</span>
                             <input value={message.name} onChange={(event) => updateChatMessage(record.id, message.id, { name: event.target.value })} placeholder="请输入角色名字" aria-label={`聊天段落 ${index + 1} 消息 ${messageIndex + 1} 名字`} />
                           </label>
-                          <div className="chat-time-control">
-                            <span>时间</span>
-                            <input value={message.time} onChange={(event) => updateChatMessage(record.id, message.id, { time: event.target.value })} placeholder="例如 20:16" aria-label={`聊天段落 ${index + 1} 消息 ${messageIndex + 1} 时间`} />
-                            <button type="button" aria-pressed={message.showTime} onClick={() => updateChatMessage(record.id, message.id, { showTime: !message.showTime })}>{message.showTime ? "取消时间" : "插入时间"}</button>
-                          </div>
                           <label className="chat-content-field">
                             <span>内容</span>
                             <textarea value={message.content} onChange={(event) => updateChatMessage(record.id, message.id, { content: event.target.value })} placeholder="请输入聊天内容，多行内容会保留换行" spellCheck={false} aria-label={`聊天段落 ${index + 1} 消息 ${messageIndex + 1} 内容`} />
@@ -1005,9 +1082,9 @@ export default function MiniXiumi() {
             </div>
           )}
           {showComposition && (
-            <div className="composition-editor-panel">
-              <div className="pane-heading"><strong>作文板块（{compositions.length} 篇）</strong><button type="button" className="composition-add-button" onClick={addComposition}>＋ 添加作文</button></div>
-              <div className="teacher-comment-control">
+            <div className={`composition-editor-panel${compositionCollapsed ? " collapsed" : ""}`}>
+              <div className="pane-heading"><strong>作文板块（{compositions.length} 篇）</strong><span style={{ display: "flex", gap: 6 }}><button type="button" className="composition-add-button" onClick={() => setCompositionCollapsed((folded) => !folded)}>{compositionCollapsed ? "展开" : "隐藏"}</button><button type="button" className="composition-add-button" onClick={addComposition}>＋ 添加作文</button></span></div>
+              {!compositionCollapsed && (<><div className="teacher-comment-control">
                 <label htmlFor="teacher-comment">红笔批语</label>
                 <input id="teacher-comment" value={teacherComment} onChange={(event) => setTeacherComment(event.target.value)} disabled={!showTeacherComment} aria-label="红笔批语文字" />
                 <button type="button" onClick={() => setShowTeacherComment((visible) => !visible)}>{showTeacherComment ? "隐藏" : "显示"}</button>
@@ -1022,13 +1099,15 @@ export default function MiniXiumi() {
                     </div>
                     <div className="composition-author-control">
                       <label htmlFor={`composition-author-${entry.id}`}>作者名</label>
-                      <input id={`composition-author-${entry.id}`} value={entry.author} onChange={(event) => updateComposition(entry.id, { author: event.target.value })} placeholder="请输入作者名" aria-label={`作文 ${index + 1} 作者名`} />
+                      <select id={`composition-author-${entry.id}`} value={entry.author} onChange={(event) => updateComposition(entry.id, { author: event.target.value })} aria-label={`作文 ${index + 1} 作者名`}>
+                        {Object.keys(AUTHOR_SIGNATURES).map((name) => <option key={name} value={name}>{name}</option>)}
+                      </select>
                       <button type="button" onClick={() => updateComposition(entry.id, { showAuthor: !entry.showAuthor })}>{entry.showAuthor ? "隐藏作者" : "显示作者"}</button>
                     </div>
                     <textarea value={entry.content} onChange={(event) => updateComposition(entry.id, { content: event.target.value })} spellCheck={false} aria-label={`作文 ${index + 1} 编辑器`} />
                   </section>
                 ))}
-              </div>
+              </div></>) }
             </div>
           )}
         </section>
@@ -1036,7 +1115,7 @@ export default function MiniXiumi() {
           <div className="pane-heading"><strong>公众号后台宽屏预览</strong><span>677 px</span></div>
           <div className="phone-stage">
             <section ref={previewRef} className="wechat-article" style={{ maxWidth: "677px", margin: "0 auto", padding: "14px 14px 44px", backgroundColor: "transparent", backgroundImage: `url("${WECHAT_BACKGROUND}")`, backgroundRepeat: "repeat-y", backgroundPosition: "center top", backgroundSize: "100% auto", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif" }}>
-              {isReadingGuide ? <ReadingGuidePreview markdown={markdown} /> : <ArticlePreview markdown={markdown} compositions={showComposition ? compositions : undefined} chatRecords={showChatRecords ? chatRecords : undefined} teacherComment={teacherComment} showTeacherComment={showTeacherComment} />}
+              {isReadingGuide ? <ReadingGuidePreview markdown={markdown} /> : <ArticlePreview markdown={markdown} compositions={showComposition && !compositionCollapsed ? compositions : undefined} chatRecords={showChatRecords ? chatRecords : undefined} teacherComment={teacherComment} showTeacherComment={showTeacherComment} />}
             </section>
           </div>
         </section>
